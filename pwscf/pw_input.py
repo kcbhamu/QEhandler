@@ -129,12 +129,9 @@ class PWin(object):
 
         electrons = [("conv_thr", "1.0D-6")]
 
-        cell = [("", "")]
-
         self.control = OrderedDict(control)
         self.system = OrderedDict(system)
         self.electrons = OrderedDict(electrons)
-        self.cell = OrderedDict(cell)
 
         if tagvaluepair is not None:
             for i in range(len(tagvaluepair)):
@@ -165,7 +162,21 @@ class PWin(object):
 
         return
 
-    def remove_tags(self, tag, value):
+    def remove_tags(self, tag, default=False):
+        for x in list(self.taglist.keys()):
+            if tag in list(self.taglist[x].keys()):
+                if x == "control":
+                    del self.control[tag]
+                elif x == "system":
+                    del self.system[tag]
+                elif x == "electrons":
+                    del self.electrons[tag]
+                elif x == "ions":
+                    del self.ions[tag]
+                elif x == "cell":
+                    del self.cell[tag]
+            else:
+                raise IOError("No such tag implemented in PWscf package!")
         return
 
 
