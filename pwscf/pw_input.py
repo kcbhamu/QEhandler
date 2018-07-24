@@ -1,8 +1,9 @@
 from __future__ import unicode_literals, print_function
 from collections import OrderedDict
-from utils.generalutils import ScientificConstants
+from utils.generalutils import ScientificConstants, Unitconverter
 import numpy as np
 import yaml
+import spglib
 
 
 # TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
@@ -250,6 +251,55 @@ class PWin(object):
             self.kpoints["numkp"] = numkp
             self.kpoints["points"] = np.array(kp_list, dtype='d')
 
+        return
+
+    def unitcell_transform(self, unit=None, unitvec=None, rotate=None):
+        if unitvec is not None:
+            self.cellparam["vector"] = np.array(unitvec, ntype='d')
+            self.cellparam["unit"] = unit
+
+        if rotate is not None:
+            self.cellparam["vector"] = np.dot(self.cellparam["vector"], np.array(rotate, dtype='d'))
+
+        if unit != self.cellparam["unit"]:
+            newvec = []
+            for x in self.cellparam["vector"]:
+                newvec.append(Unitconverter.unit_convert(x, "length", self.cellparam["unit"], unit))
+            self.cellparam["vector"] = np.array(newvec, dtype='d')
+            self.cellparam["unit"] = unit
+
+        return
+
+    # TODO: handling alat and crystal_sg units
+    def position_unittransform(self, unit):
+        if unit != self.atompos["unit"]:
+            newpos = []
+            if unit == "crystal":
+                for x in self.atompos["coordinates"]:
+                    newpos.append(np.dot(x, np.linalg.inv(self.cellparam["vector"])))
+            else:
+                for x in self.atompos["coordinates"]:
+                    newpos.append(Unitconverter.unit_convert(x, "length", self.cellparam["unit"], unit))
+            self.atompos["coordinates"] = np.array(newpos, dtype='d')
+        else:
+            pass
+
+        return
+
+    def position_translation(self, transvec, transunit):
+        newpos = []
+        if transunit != self.atompos["unit"]:
+            if self.atompos["unit"] == "crystal":
+                transvec = np.dot(transvec, np.linalg.inv(self.cellparam["vector"]))
+            else:
+                transvec = Unitconverter.unit_convert(transvec, "length", transunit, self.sellparam["unit"])
+        else:
+            transvec = transvec
+
+        for x in self.atompos["coordinates"]:
+            newpos.append(x + np.array(transvec, dtype='d'))
+
+        self.atompos["coordinates"] = np.array(newpos, dtype='d')
         return
 
 
