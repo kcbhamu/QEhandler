@@ -310,7 +310,18 @@ class PWin(object):
         for x in elements:
             self.atompos["elements"] = np.append(self.atompos["elements"], x)
 
-        for x in coordinates:
+        if unit != self.atompos["unit"]:
+            newcoord = []
+            if self.atompos["unit"] == "crystal":
+                for x in coordinates:
+                    newcoord.append(np.dot(x, np.linalg.inv(self.cellparam["vector"])))
+            else:
+                for x in coordinates:
+                    newpos.append(Unitconverter.unit_convert(x, "length", unit, self.sellparam["unit"]))
+        else:
+            pass
+
+        for x in np.array(newcoord, dtype='d'):
             self.atompos["coordinates"] = np.append(self.atompos["coordinates"], x)
 
         self.atompos["coordinates"] = np.reshape(self.atompos["coordinates"], (len(self.atompos["elements"]), 3))
