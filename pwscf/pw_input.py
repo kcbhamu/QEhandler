@@ -4,6 +4,7 @@ import numpy as np
 import yaml
 
 
+# TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
 class PWin(object):
 
     def __init__(self, file, cellparam=None, atompos=None, aspecies=None, kpoints=None, control=None, system=None,
@@ -166,15 +167,30 @@ class PWin(object):
         for x in list(self.taglist.keys()):
             if tag in list(self.taglist[x].keys()):
                 if x == "control":
-                    del self.control[tag]
+                    if default:
+                        self.control[tag] = self.taglist[x][tag]['default']
+                    else:
+                        del self.control[tag]
                 elif x == "system":
-                    del self.system[tag]
+                    if default:
+                        self.system[tag] = self.taglist[x][tag]['default']
+                    else:
+                        del self.system[tag]
                 elif x == "electrons":
-                    del self.electrons[tag]
+                    if default:
+                        self.electrons[tag] = self.taglist[x][tag]['default']
+                    else:
+                        del self.electrons[tag]
                 elif x == "ions":
-                    del self.ions[tag]
+                    if default:
+                        self.ions[tag] = self.taglist[x][tag]['default']
+                    else:
+                        del self.ions[tag]
                 elif x == "cell":
-                    del self.cell[tag]
+                    if default:
+                        self.cell[tag] = self.taglist[x][tag]['default']
+                    else:
+                        del self.cell[tag]
             else:
                 raise IOError("No such tag implemented in PWscf package!")
         return
