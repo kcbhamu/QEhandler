@@ -11,18 +11,18 @@ class PWin(object):
 
     def __init__(self, file=None, cellparam=None, atompos=None, aspecies=None, kpoints=None, control=None, system=None,
                  electrons=None, ions=None, cell=None, constr=None, occup=None, aforces=None):
-        self.cellparam = cellparam or {}
-        self.atompos = atompos or {}
-        self.aspecies = aspecies or {}
-        self.kpoints = kpoints or {}
-        self.control = control or {}
-        self.system = system or {}
-        self.electrons = electrons or {}
-        self.ions = ions or {}
-        self.cell = cell or {}
-        self.constr = constr or {}
-        self.occup = occup or {}
-        self.aforces = aforces or {}
+        self.cellparam = cellparam or OrderedDict()
+        self.atompos = atompos or OrderedDict()
+        self.aspecies = aspecies or OrderedDict()
+        self.kpoints = kpoints or OrderedDict()
+        self.control = control or OrderedDict()
+        self.system = system or OrderedDict()
+        self.electrons = electrons or OrderedDict()
+        self.ions = ions or OrderedDict()
+        self.cell = cell or OrderedDict()
+        self.constr = constr or OrderedDict()
+        self.occup = occup or OrderedDict()
+        self.aforces = aforces or OrderedDict()
         self.infile = file
 
         with open("input_tags.yaml", 'r') as y:
