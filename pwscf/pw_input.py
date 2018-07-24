@@ -96,7 +96,7 @@ class PWin(object):
                 elif dic["K_POINTS"]["unit"] == "gamma":
                     pass
                 else:
-                    dic["K_POINTS"]["numpoints"] = kp_list.pop(0)
+                    dic["K_POINTS"]["numkp"] = kp_list.pop(0)
                     dic["K_POINTS"]["points"] = np.array(kp_list, dtype='d')
                 self.kpoints = dic["K_POINTS"]
 
@@ -219,6 +219,30 @@ class PWin(object):
 
         return
 
+    # TODO: test kpt file import
+    def change_kpoints(self, unit="automatic", spacing=None, grid=None, shift=None, numkp=None, kpts=None):
+        self.kpoints["unit"] = unit
+
+        if unit == "gamma":
+            pass
+        elif unit == "automatic":
+            self.kpoints["grid"] = grid
+            self.kpoints["shift"] = shift
+        elif unit == "spacing":
+            self.kpoints["unit"] = "automatic"
+            grida = int(np.ceil(np.linalg.norm(rec_vector(self.cellparam["vector"])[0]) * 2 * np.pi / spacing))
+            gridb = int(np.ceil(np.linalg.norm(rec_vector(self.cellparam["vector"])[1]) * 2 * np.pi / spacing))
+            gridc = int(np.ceil(np.linalg.norm(rec_vector(self.cellparam["vector"])[2]) * 2 * np.pi / spacing))
+            self.kpoints["grid"] = "%s %s %s" % (grida, gridb, gridc)
+            self.kpoints["shift"] = shift
+        else:
+            with open(kpts, "r") as infile:
+                kp_list = infile.readlines().split()
+            self.kpoints["numkp"] = numkp
+            self.kpoints["points"] = np.array(kp_list, dtype='d')
+
+        return
+
 
 def tag_parser(linein):
     line = linein.partition("=")
@@ -247,10 +271,23 @@ def pseudo_parser(linein):
     return elem, dic
 
 
+def cell_volume(unitvec):
+    volume = np.dot(np.cross(unitvec[1], unitvec[2]), unitvec[0])
+    return volume
+
+
+def rec_vector(unitvec):
+    a_star = np.cross(unitvec[1], unitvec[2]) / cell_volume(unitvec)
+    b_star = np.cross(unitvec[2], unitvec[0]) / cell_volume(unitvec)
+    c_star = np.cross(unitvec[0], unitvec[1]) / cell_volume(unitvec)
+    return np.array([a_star, b_star, c_star], dtype='d')
+
+
 def ordered_load(stream, yamlloader=yaml.Loader, object_pairs_hook=OrderedDict):
     class OrderedLoader(yamlloader):
         pass
 
+    # noinspection PyArgumentList
     def construct_mapping(loader, node):
         loader.flatten_mapping(node)
         return object_pairs_hook(loader.construct_pairs(node))
@@ -259,4 +296,3 @@ def ordered_load(stream, yamlloader=yaml.Loader, object_pairs_hook=OrderedDict):
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         construct_mapping)
     return yaml.load(stream, OrderedLoader)
-
