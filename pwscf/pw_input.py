@@ -165,8 +165,6 @@ class PWin(object):
                     self.ions[tag] = value
                 elif x == "cell":
                     self.cell[tag] = value
-            else:
-                raise IOError("No such tag implemented in PWscf package!")
 
         return
 
@@ -198,8 +196,7 @@ class PWin(object):
                         self.cell[tag] = self.taglist[x][tag]['default']
                     else:
                         del self.cell[tag]
-            else:
-                raise IOError("No such tag implemented in PWscf package!")
+
         return
 
     def add_pseudo(self, elem, mass=None, pseudo=None, pseudo_label=None):
