@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 from collections import OrderedDict
+from utils.generalutils import ScientificConstants
 import numpy as np
 import yaml
 
@@ -7,7 +8,7 @@ import yaml
 # TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
 class PWin(object):
 
-    def __init__(self, file, cellparam=None, atompos=None, aspecies=None, kpoints=None, control=None, system=None,
+    def __init__(self, file=None, cellparam=None, atompos=None, aspecies=None, kpoints=None, control=None, system=None,
                  electrons=None, ions=None, cell=None, constr=None, occup=None, aforces=None):
         self.cellparam = cellparam or {}
         self.atompos = atompos or {}
@@ -21,7 +22,7 @@ class PWin(object):
         self.constr = constr or {}
         self.occup = occup or {}
         self.aforces = aforces or {}
-        self.infile = file or {}
+        self.infile = file
 
         with open("input_tags.yaml", 'r') as y:
             self.taglist = ordered_load(y, yaml.SafeLoader)[0]
@@ -85,9 +86,8 @@ class PWin(object):
             if "&CELL" in namelist:
                 self.cell = dic["&CELL"]
 
-            if "CELL_PARAMETERS" in namelist:
-                dic["CELL_PARAMETERS"]["vector"] = np.array(cell_param, dtype='d')
-                self.cellparam = dic["CELL_PARAMETERS"]
+            if "ATOMIC_SPECIES" in namelist:
+                self.aspecies = dic["ATOMIC_SPECIES"]
 
             if "K_POINTS" in namelist:
                 if dic["K_POINTS"]["unit"] == "automatic":
@@ -99,6 +99,10 @@ class PWin(object):
                     dic["K_POINTS"]["numpoints"] = kp_list.pop(0)
                     dic["K_POINTS"]["points"] = np.array(kp_list, dtype='d')
                 self.kpoints = dic["K_POINTS"]
+
+            if "CELL_PARAMETERS" in namelist:
+                dic["CELL_PARAMETERS"]["vector"] = np.array(cell_param, dtype='d')
+                self.cellparam = dic["CELL_PARAMETERS"]
 
             if "ATOMIC_POSITIONS" in namelist:
                 elements = []
@@ -115,7 +119,7 @@ class PWin(object):
 
         return
 
-    def generate_pwin(self, tagvaluepair=None):
+    def generate_pwin(self, tagvaluepair=None, pseudo=None, kpoints=None, cellparam=None, atomicpos=None):
         control = [("calculation", "scf"),
                    ("outdir", "./out/"),
                    ("etot_conv_thr", "1.0D-6"),
@@ -142,6 +146,8 @@ class PWin(object):
                 elif i % 2 == 0:
                     tag = tagvaluepair[i]
                 self.write_tags(tag, value)
+
+        # if pseudo is not None:
 
         return
 
@@ -193,6 +199,24 @@ class PWin(object):
                         del self.cell[tag]
             else:
                 raise IOError("No such tag implemented in PWscf package!")
+        return
+
+    def add_pseudo(self, elem, mass=None, pseudo=None, pseudo_label=None):
+        if mass is None:
+            m = ScientificConstants().elementary_data(elem, "mass")
+        else:
+            m = mass
+
+        if pseudo is None:
+            if pseudo_label is None:
+                pp = str(elem + "_dummy.upf")
+            else:
+                pp = str(elem + "_" + pseudo_label)
+        else:
+            pp = pseudo
+
+        self.aspecies[elem] = {"mass": m, "pseudo": pp}
+
         return
 
 
