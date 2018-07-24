@@ -253,6 +253,7 @@ class PWin(object):
 
         return
 
+    # TODO: atomic position change and adding/deleting atoms based on the space group operators
     def unitcell_transform(self, unit=None, unitvec=None, rotate=None):
         if unitvec is not None:
             self.cellparam["vector"] = np.array(unitvec, ntype='d')
@@ -300,6 +301,19 @@ class PWin(object):
             newpos.append(x + np.array(transvec, dtype='d'))
 
         self.atompos["coordinates"] = np.array(newpos, dtype='d')
+        return
+
+    def add_atoms(self, elements, coordinates, unit):
+        if len(elements) != len(coordinates):
+            raise IOError("Number of input elements and coordinates not matching!")
+
+        for x in elements:
+            self.atompos["elements"] = np.append(self.atompos["elements"], x)
+
+        for x in coordinates:
+            self.atompos["coordinates"] = np.append(self.atompos["coordinates"], x)
+
+        self.atompos["coordinates"] = np.reshape(self.atompos["coordinates"], (len(self.atompos["elements"]), 3))
         return
 
 
