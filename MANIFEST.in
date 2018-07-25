@@ -1,0 +1,5 @@
+exclude MANIFEST.in
+include README.md
+include LICENSE
+recursive-include *.yaml
+prune TODO
