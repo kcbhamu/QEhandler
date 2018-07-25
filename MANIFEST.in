@@ -1,5 +1,5 @@
 exclude MANIFEST.in
 include README.md
 include LICENSE
-recursive-include *.yaml
+recursive-include pwscf *.yaml
 prune TODO
