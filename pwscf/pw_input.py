@@ -143,7 +143,6 @@ class PWin(object):
         # if pseudo is not None:
         #     for x in pseudo:
 
-
         return
 
     def write_tags(self, tag, value):
@@ -161,9 +160,8 @@ class PWin(object):
                     self.cell[tag] = value
         return
 
-
     def write_tags_from_tagvaluepairlist(self, pairlist):
-        newlist = np.reshape(np.array(pairlist), (len(pairlist) / 2 , 2))
+        newlist = np.reshape(np.array(pairlist), ((len(pairlist) / 2), 2))
 
         for x in range(len(newlist)):
             tag = x[0]
@@ -182,7 +180,6 @@ class PWin(object):
                     elif y == "cell":
                         self.cell[tag] = value
         return
-
 
     def remove_tags(self, tags, default=False):
         for item in tags:
@@ -267,11 +264,10 @@ class PWin(object):
 
         return
 
-
     # TODO: atomic position change and adding/deleting atoms based on the space group operators
     def unitcell_transform(self, unit=None, unitvec=None, rotate=None):
         if unitvec is not None:
-            self.cellparam["vector"] = np.array(unitvec, ntype='d')
+            self.cellparam["vector"] = np.reshape(np.array(unitvec, dtype='d'), (3, 3))
             self.cellparam["unit"] = unit
 
         if rotate is not None:
@@ -288,7 +284,9 @@ class PWin(object):
 
     # TODO: handling alat and crystal_sg units
     def position_unittransform(self, unit):
-        if unit != self.atompos["unit"]:
+        if unit is None:
+            pass
+        elif unit != self.atompos["unit"]:
             newpos = []
             if unit == "crystal":
                 for x in self.atompos["coordinates"]:
@@ -309,7 +307,9 @@ class PWin(object):
                 transvec = np.dot(transvec, np.linalg.inv(self.cellparam["vector"]))
             else:
                 transvec = Unitconverter.unit_convert(transvec, "length", transunit, self.sellparam["unit"])
-        else:
+        elif transunit == self.atompos["unit"]:
+            transvec = transvec
+        elif transunit is None:
             transvec = transvec
 
         for x in self.atompos["coordinates"]:
