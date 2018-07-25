@@ -120,7 +120,7 @@ class PWin(object):
 
         return
 
-    def generate_pwin(self, tagvaluepair=None, pseudo=None, kpoints=None, cellparam=None, atomicpos=None):
+    def generate_pwin(self, default=False, tagvaluepair=None):
         control = [("calculation", "scf"),
                    ("outdir", "./out/"),
                    ("etot_conv_thr", "1.0D-6"),
@@ -130,14 +130,15 @@ class PWin(object):
         system = [("ibrav", "0"),
                   ("nat", ""),
                   ("ntyp", ""),
-                  ("ecutwfc", "40.0"),
+                  ("ecutwfc", "45.0"),
                   ]
 
         electrons = [("conv_thr", "1.0D-6")]
 
-        self.control = OrderedDict(control)
-        self.system = OrderedDict(system)
-        self.electrons = OrderedDict(electrons)
+        if default:
+            self.control = OrderedDict(control)
+            self.system = OrderedDict(system)
+            self.electrons = OrderedDict(electrons)
 
         if tagvaluepair is not None:
             for i in range(len(tagvaluepair)):
@@ -147,9 +148,6 @@ class PWin(object):
                 elif i % 2 == 0:
                     tag = tagvaluepair[i]
                 self.write_tags(tag, value)
-
-        # if pseudo is not None:
-
         return
 
     def write_tags(self, tag, value):
