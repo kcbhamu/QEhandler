@@ -247,12 +247,12 @@ class PWin(object):
             gridc = int(np.ceil(np.linalg.norm(rec_vector(self.cellparam["vector"])[2]) * 2 * np.pi / spacing))
 
             if reduce is not None:
-                if reduce == 0:
-                    grida = 1
-                elif reduce == 1:
-                    gridb = 1
-                elif reduce == 2:
-                    gridc = 1
+                if reduce == "0":
+                    grida = "1"
+                elif reduce == "1":
+                    gridb = "1"
+                elif reduce == "2":
+                    gridc = "1"
 
             self.kpoints["grid"] = "%s %s %s" % (grida, gridb, gridc)
             self.kpoints["shift"] = shift
