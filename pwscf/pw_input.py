@@ -9,28 +9,25 @@ import spglib
 # TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
 class PWin(object):
 
-    def __init__(self, file=None, cellparam=None, atompos=None, aspecies=None, kpoints=None, control=None, system=None,
-                 electrons=None, ions=None, cell=None, constr=None, occup=None, aforces=None):
-        self.cellparam = cellparam or OrderedDict()
-        self.atompos = atompos or OrderedDict()
-        self.aspecies = aspecies or OrderedDict()
-        self.kpoints = kpoints or OrderedDict()
-        self.control = control or OrderedDict()
-        self.system = system or OrderedDict()
-        self.electrons = electrons or OrderedDict()
-        self.ions = ions or OrderedDict()
-        self.cell = cell or OrderedDict()
-        self.constr = constr or OrderedDict()
-        self.occup = occup or OrderedDict()
-        self.aforces = aforces or OrderedDict()
-        self.infile = file
-
+    def __init__(self):
+        self.cellparam = OrderedDict()
+        self.atompos = OrderedDict()
+        self.aspecies = OrderedDict()
+        self.kpoints = OrderedDict()
+        self.control = OrderedDict()
+        self.system = OrderedDict()
+        self.electrons = OrderedDict()
+        self.ions = OrderedDict()
+        self.cell = OrderedDict()
+        self.constr = OrderedDict()
+        self.occup = OrderedDict()
+        self.aforces = OrderedDict()
         with open("input_tags.yaml", 'r') as y:
             self.taglist = ordered_load(y, yaml.SafeLoader)[0]
 
     # TODO: handling namelists under "others" list
-    def read_file(self):
-        with open(self.infile, "r") as f:
+    def read_file(self, infile):
+        with open(infile, "r") as f:
             namelist = []
             others = ["ATOMIC_SPECIES", "CONSTRAINTS", "OCCUPATIONS", "ATOMIC_FORCES"]
             dic = OrderedDict()
@@ -120,7 +117,7 @@ class PWin(object):
 
         return
 
-    def generate_pwin(self, default=False, tagvaluepair=None):
+    def generate_pwin(self, default=False, tagvaluepair=None, pseudo=None, kpoints=None, cellparam=None, atoms=None):
         control = [("calculation", "scf"),
                    ("outdir", "./out/"),
                    ("etot_conv_thr", "1.0D-6"),
@@ -141,13 +138,12 @@ class PWin(object):
             self.electrons = OrderedDict(electrons)
 
         if tagvaluepair is not None:
-            for i in range(len(tagvaluepair)):
-                tag = value = None
-                if i % 2 == 0:
-                    tag = tagvaluepair[i]
-                elif i % 2 == 0:
-                    tag = tagvaluepair[i]
-                self.write_tags(tag, value)
+            self.write_tags_from_tagvaluepairlist(tagvaluepair)
+
+        # if pseudo is not None:
+        #     for x in pseudo:
+
+
         return
 
     def write_tags(self, tag, value):
@@ -163,41 +159,64 @@ class PWin(object):
                     self.ions[tag] = value
                 elif x == "cell":
                     self.cell[tag] = value
+        return
+
+
+    def write_tags_from_tagvaluepairlist(self, pairlist):
+        newlist = np.reshape(np.array(pairlist), (len(pairlist) / 2 , 2))
+
+        for x in range(len(newlist)):
+            tag = x[0]
+            value = x[1]
+
+            for y in list(self.taglist.keys()):
+                if tag in list(self.taglist[y].keys()):
+                    if y == "control":
+                        self.control[tag] = value
+                    elif y == "system":
+                        self.system[tag] = value
+                    elif y == "electrons":
+                        self.electrons[tag] = value
+                    elif y == "ions":
+                        self.ions[tag] = value
+                    elif y == "cell":
+                        self.cell[tag] = value
+        return
+
+
+    def remove_tags(self, tags, default=False):
+        for item in tags:
+            for x in list(self.taglist.keys()):
+                if item in list(self.taglist[x].keys()):
+                    if x == "control":
+                        if default:
+                            self.control[item] = self.taglist[x][item]['default']
+                        else:
+                            del self.control[item]
+                    elif x == "system":
+                        if default:
+                            self.system[item] = self.taglist[x][item]['default']
+                        else:
+                            del self.system[item]
+                    elif x == "electrons":
+                        if default:
+                            self.electrons[item] = self.taglist[x][item]['default']
+                        else:
+                            del self.electrons[item]
+                    elif x == "ions":
+                        if default:
+                            self.ions[item] = self.taglist[x][item]['default']
+                        else:
+                            del self.ions[item]
+                    elif x == "cell":
+                        if default:
+                            self.cell[item] = self.taglist[x][item]['default']
+                        else:
+                            del self.cell[item]
 
         return
 
-    def remove_tags(self, tag, default=False):
-        for x in list(self.taglist.keys()):
-            if tag in list(self.taglist[x].keys()):
-                if x == "control":
-                    if default:
-                        self.control[tag] = self.taglist[x][tag]['default']
-                    else:
-                        del self.control[tag]
-                elif x == "system":
-                    if default:
-                        self.system[tag] = self.taglist[x][tag]['default']
-                    else:
-                        del self.system[tag]
-                elif x == "electrons":
-                    if default:
-                        self.electrons[tag] = self.taglist[x][tag]['default']
-                    else:
-                        del self.electrons[tag]
-                elif x == "ions":
-                    if default:
-                        self.ions[tag] = self.taglist[x][tag]['default']
-                    else:
-                        del self.ions[tag]
-                elif x == "cell":
-                    if default:
-                        self.cell[tag] = self.taglist[x][tag]['default']
-                    else:
-                        del self.cell[tag]
-
-        return
-
-    def add_pseudo(self, elem, mass=None, pseudo=None, pseudo_label=None):
+    def write_pseudo(self, elem, mass=None, pseudo=None, pseudo_label=None):
         if mass is None:
             m = ScientificConstants().elementary_data(elem, "mass")
         else:
@@ -247,6 +266,7 @@ class PWin(object):
             self.kpoints["points"] = np.array(kp_list, dtype='d')
 
         return
+
 
     # TODO: atomic position change and adding/deleting atoms based on the space group operators
     def unitcell_transform(self, unit=None, unitvec=None, rotate=None):
@@ -298,7 +318,7 @@ class PWin(object):
         self.atompos["coordinates"] = np.array(newpos, dtype='d')
         return
 
-    def add_atoms(self, elements, coordinates, unit):
+    def write_atoms(self, elements, coordinates, unit):
         if len(elements) != len(coordinates):
             raise IOError("Number of input elements and coordinates not matching!")
 
@@ -320,6 +340,10 @@ class PWin(object):
             self.atompos["coordinates"] = np.append(self.atompos["coordinates"], x)
 
         self.atompos["coordinates"] = np.reshape(self.atompos["coordinates"], (len(self.atompos["elements"]), 3))
+        return
+
+    def write_pwin(self, outfile):
+
         return
 
 
