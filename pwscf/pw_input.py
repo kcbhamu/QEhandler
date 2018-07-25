@@ -231,6 +231,7 @@ class PWin(object):
 
         return
 
+    # TODO: implementing tpiba and crystal units
     # TODO: test kpt file import
     def change_kpoints(self, unit="automatic", spacing=None, grid=None, shift=None, numkp=None, kpts=None, reduce=None):
         self.kpoints["unit"] = unit
