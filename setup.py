@@ -10,5 +10,5 @@ setup(
     author_email='jin890@yonsei.ac.kr',
     description='',
     package_data={"pwscf": ["input_tags.yaml"]},
-    include_package_data=True, install_requires=['numpy', 'spglib', 'PyYAML']
+    include_package_data=True, install_requires=['numpy', 'spglib', 'PyYAML', 'argparse']
 )
