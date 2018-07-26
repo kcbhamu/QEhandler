@@ -1,10 +1,11 @@
 from __future__ import unicode_literals, print_function
 from collections import OrderedDict
 from utils.generalutils import ScientificConstants, Unitconverter
+import os
+import sys
 import numpy as np
-import yaml
 import spglib
-
+import yaml
 
 # TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
 class PWin(object):
@@ -22,7 +23,8 @@ class PWin(object):
         self.constr = OrderedDict()
         self.occup = OrderedDict()
         self.aforces = OrderedDict()
-        with open("input_tags.yaml", 'r') as y:
+        # with open(os.path.join(sys.path[2], "/pwscf/input_tags.yaml"), "r") as y:
+        with open("input_tags.yaml", "r") as y:
             self.taglist = ordered_load(y, yaml.SafeLoader)[0]
 
     # TODO: handling namelists under "others" list
@@ -296,6 +298,7 @@ class PWin(object):
                 for x in self.atompos["coordinates"]:
                     newpos.append(Unitconverter.unit_convert(x, "length", self.cellparam["unit"], unit))
             self.atompos["coordinates"] = np.array(newpos, dtype='d')
+            self.atompos["unit"] = unit
         else:
             pass
 
@@ -344,6 +347,79 @@ class PWin(object):
         return
 
     def write_pwin(self, outfile):
+        with open(outfile, "w") as out:
+            out.write("&CONTROL\n")
+            for x in self.control.items():
+                if self.taglist["control"][x[0]]["type"] == "str":
+                    out.write("  %15s = '%s'" % (x[0], x[1]))
+                else:
+                    out.write("  %15s = %s" % (x[0], x[1]))
+            out.write("/\n")
+            out.write("&SYSTEM\n")
+            for x in self.system.items():
+                if self.taglist["system"][x[0]]["type"] == "str":
+                    out.write("  %15s = '%s'" % (x[0], x[1]))
+                else:
+                    out.write("  %15s = %s" % (x[0], x[1]))
+            out.write("/\n")
+            out.write("&ELECTRONS\n")
+            for x in self.electrons.items():
+                if self.taglist["electrons"][x[0]]["type"] == "str":
+                    out.write("  %15s = '%s'" % (x[0], x[1]))
+                else:
+                    out.write("  %15s = %s" % (x[0], x[1]))
+            out.write("/\n")
+            out.write("&IONS\n")
+            for x in self.ions.items():
+                if self.taglist["ions"][x[0]]["type"] == "str":
+                    out.write("  %15s = '%s'" % (x[0], x[1]))
+                else:
+                    out.write("  %15s = %s" % (x[0], x[1]))
+            out.write("/\n")
+            out.write("&CELL\n")
+            for x in self.cell.items():
+                if self.taglist["cell"][x[0]]["type"] == "str":
+                    out.write("  %15s = '%s'" % (x[0], x[1]))
+                else:
+                    out.write("  %15s = %s" % (x[0], x[1]))
+            out.write("/\n")
+
+            if len(self.aspecies) != 0:
+                out.write("ATOMIC_SPECIES\n")
+                for x in self.aspecies.keys():
+                    out.write("%4s %6s %s\n" % (x, self.aspecies[x]["mass"], self.aspecies[x]["pseudo"]))
+
+            if len(self.kpoints) != 0:
+                out.write("K_POINTS  %s\n" % self.kpoints["unit"])
+                if self.kpoints["unit"] == "gamma":
+                    pass
+                elif self.kpoints["unit"] == "automatic":
+                    out.write("%s %s %s   %s %s %s\n" % (self.kpoints["grid"][0], self.kpoints["grid"][1],
+                                                         self.kpoints["grid"][2], self.kpoints["shift"][0],
+                                                         self.kpoints["shift"][1], self.kpoints["shift"][2]))
+
+                elif self.kpoints["unit"] == "tpiba":
+                    out.write("%s\n" % self.kpoints["numkp"])
+                    for x in self.kpoints["points"]:
+                        for y in x:
+                            out.write("%s " % y)
+                        out.write("\n")
+
+            if len(self.cellparam) != 0:
+                out.write("CELL_PARAMETERS  %s\n" % self.cellaparam["unit"])
+                for x in self.cellparam["vector"]:
+                    for y in x:
+                        out.write("%3.10s  " % y)
+                    out.write("\n")
+
+            if len(self.atompos) != 0:
+                out.write("ATOMIC_POSITIONS  %s\n" % self.atompos["unit"])
+                for i in range(len(self.atompos["elements"])):
+                    out.write("%3s  %3.8f  %3.8f  %3.8f  %1s  %1s  %1s\n"
+                              % (self.atompos["elements"][i], self.atompos["coordinates"][i][0],
+                                 self.atompos["coordinates"][i][1], self.atompos["coordinates"][i][2],
+                                 self.atompos["dynamics"][i][0], self.atompos["dynamics"][i][1],
+                                 self.atompos["dynamics"][i][2]))
 
         return
 
@@ -351,7 +427,7 @@ class PWin(object):
 def tag_parser(linein):
     line = linein.partition("=")
     tag = str(line[0]).strip()
-    val = str(line[2]).strip()
+    val = str(line[2]).strip().strip("'")
     return tag, val
 
 
