@@ -78,12 +78,12 @@ def executepwinkpoints(args):
     return
 
 
-# def executepwingen(args):
-#     p = PWin()
-#     p.read_file(args.input)
-#
-#     p.write_pwin(args.output)
-#     return
+def executepwingen(args):
+    p = PWin()
+    p.read_file(args.input)
+    p.generate_pwin(args.tags)
+    p.write_pwin(args.output)
+    return
 
 
 def main():
@@ -147,8 +147,9 @@ def main():
     parser_kpoints.add_argument("-kred", dest="kreduce", type=str, default=None)
     parser_kpoints.set_defaults(func=executepwinkpoints)
 
-    # parser_gen = pwinsubparsers.add_parser("generate")
-    # parser_gen.set_defaults(func=executepwingen)
+    parser_gen = pwinsubparsers.add_parser("generate")
+    parser_gen.add_argument("-t", dest="tags", type=str, default=None, nargs='*')
+    parser_gen.set_defaults(func=executepwingen)
 
     args = parser.parse_args()
 

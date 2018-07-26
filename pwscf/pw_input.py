@@ -119,7 +119,7 @@ class PWin(object):
 
         return
 
-    def generate_pwin(self, default=False, tagvaluepair=None, pseudo=None, kpoints=None, cellparam=None, atoms=None):
+    def generate_pwin(self, tagvaluepair=None):
         control = [("calculation", "scf"),
                    ("outdir", "./out/"),
                    ("etot_conv_thr", "1.0D-6"),
@@ -141,9 +141,6 @@ class PWin(object):
 
         if tagvaluepair is not None:
             self.write_tags_from_tagvaluepairlist(tagvaluepair)
-
-        # if pseudo is not None:
-        #     for x in pseudo:
 
         return
 
