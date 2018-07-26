@@ -24,8 +24,7 @@ class PWin(object):
         self.constr = OrderedDict()
         self.occup = OrderedDict()
         self.aforces = OrderedDict()
-        # with open(os.path.join(sys.path[2], "/pwscf/input_tags.yaml"), "r") as y:
-        with open("input_tags.yaml", "r") as y:
+        with open(os.path.join(os.path.dirname(__file__), "input_tags.yaml"), "r") as y:
             self.taglist = ordered_load(y, yaml.SafeLoader)[0]
 
     # TODO: handling namelists under "others" list
