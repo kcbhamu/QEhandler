@@ -6,9 +6,6 @@ import sys
 import numpy as np
 from pwscf.pw_input import PWin
 
-# installpath = '/Users/Woosun/Dropbox/Dev/QEhandler'
-# sys.path.extend([installpath])
-
 
 def executepwintags(args):
     p = PWin()
