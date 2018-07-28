@@ -1,0 +1,292 @@
+---
+- inputpp:
+    prefix:
+      values:
+      default:
+      type: str
+    outdir:
+      values:
+      default:
+      type: str
+    filplot:
+      values:
+      default:
+      type: str
+    plot_num:
+      values:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 17
+      - 18
+      - 19
+      - 20
+      - 21
+      default:
+      type: int
+  inputpp_plot_num:
+    0:
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        default: 0
+        type: int
+    1:
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        default: 0
+        type: int
+    2:
+    3:
+      emin:
+        values:
+        default:
+        type: real
+      emax:
+        values:
+        default:
+        type: real
+      delta_e:
+        values:
+        default: 0.1
+        type: real
+      degauss_ldos:
+        values:
+        default:
+        type: real
+    4:
+    5:
+      sample_bias:
+        values:
+        default:
+        type: real
+    6:
+    7:
+      kpoint:
+        values:
+        default:
+        type: int
+      kband:
+        values:
+        default:
+        type: int
+      lsign:
+        values:
+        default:
+        type: logical
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        - 3
+        default: 0
+        type: int
+    8:
+    9:
+    10:
+      emin:
+        values:
+        default:
+        type: real
+      emax:
+        values:
+        default:
+        type: real
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        default: 0
+        type: int
+    11:
+    12:
+    13:
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        - 3
+        default: 0
+        type: int
+    17:
+      spin_component:
+        values:
+        - 0
+        - 1
+        - 2
+        default: 0
+        type: int
+    18:
+    19:
+    20:
+    21:
+  plot:
+    nfile:
+      values:
+      default: 1
+      type: int
+    filepp:
+      values:
+      default:
+      type: str
+    weight:
+      values:
+      default:
+      type: real
+    iflag:
+      values:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      default:
+      type: int
+    output_format:
+      values:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      default:
+      type: int
+    fileout:
+      values:
+      default:
+      type: str
+    interpolation:
+      values:
+      - fourier
+      - bspline
+      default: fourier
+      type: str
+  plot_iflag:
+    0:
+      e1:
+        values:
+        default:
+        type: real
+        required: True
+      x0:
+        values:
+        default:
+        type: real
+        required: True
+      nx:
+        values:
+        default:
+        type: int
+        required: True
+    1:
+      e1:
+        values:
+        default:
+        type: real
+        required: True
+      x0:
+        values:
+        default:
+        type: real
+        required: True
+      nx:
+        values:
+        default:
+        type: int
+        required: True
+    2:
+      e1:
+        values:
+        default:
+        type: real
+        required: True
+      e2:
+        values:
+        default:
+        type: real
+        required: True
+      x0:
+        values:
+        default:
+        type: real
+        required: True
+      nx:
+        values:
+        default:
+        type: int
+        required: True
+      ny:
+        values:
+        default:
+        type: int
+        required: True
+    3:
+      e1:
+        values:
+        default:
+        type: real
+        required: True
+      e2:
+        values:
+        default:
+        type: real
+        required: True
+      e3:
+        values:
+        default:
+        type: real
+        required: True
+      x0:
+        values:
+        default:
+        type: real
+        required: True
+      nx:
+        values:
+        default:
+        type: int
+        required: True
+      ny:
+        values:
+        default:
+        type: int
+        required: True
+      nz:
+        values:
+        default:
+        type: int
+        required: True
+    4:
+      radius:
+      nx:
+        values:
+        default:
+        type: int
+        required: True
+      ny:
+        values:
+        default:
+        type: int
+        required: True
