@@ -424,7 +424,7 @@ class PWin(object):
 def tag_parser(linein):
     line = linein.partition("=")
     tag = str(line[0]).strip()
-    val = str(line[2]).strip().strip("'")
+    val = str(line[2]).strip().strip("'").strip(",")
     return tag, val
 
 
