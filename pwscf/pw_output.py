@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function
 from collections import OrderedDict
-from utils.generalutils import ScientificConstants, Unitconverter
+from qwutils.generalutils import ScientificConstants, Unitconverter
 import numpy as np
 import yaml
 import spglib
