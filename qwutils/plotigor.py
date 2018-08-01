@@ -5,9 +5,10 @@ import argparse
 
 
 class PlotIgor(object):
-    def __init__(self, infile, outfile=None):
+    def __init__(self, infile, outfile=None, prefix=None):
         self.infile = infile
         self.outfile = outfile or (str(infile) + ".itx")
+        self.prefix = prefix or ""
         self.wave = None
         return
 
@@ -45,8 +46,8 @@ class PlotIgor(object):
                     if np.linalg.norm(kpts[i] - kpts[i - 1]) == 0:
                         highsym.append(float(kpath[-1]) + np.linalg.norm(kpts[i] - kpts[i - 1]))
 
-            kpath = np.array(kpath, dtype='d')
-            highsym = np.array(highsym, dtype='d')
+            kpath = np.reshape(np.array(kpath, dtype='d'), (len(kpath), 1))
+            highsym = np.reshape(np.array(highsym, dtype='d'), (len(highsym), 1))
 
             dic = {"kpts": kpts,
                    "kpath": kpath,
@@ -56,66 +57,72 @@ class PlotIgor(object):
             self.wave = dic
             return
 
-    def write_itx(self, plot=True):
+    def write_band(self, fermi=0.0, shift=False, plot=True):
         layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
-                         "X ModifyGraph width=340.157,height=226.772\n"
+                         "X ModifyGraph width=255.118,height=340.157\n"
                          "X ModifyGraph marker=19\n"
                          "X ModifyGraph lSize=1.5\n"
-                         "X ModifyGraph tick=2\n"
+                         "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
                          "X ModifyGraph mirror=1\n"
-                         "X ModifyGraph fSize=24\n"
+                         "X ModifyGraph zero(left)=8\n"
+                         "X ModifyGraph fSize=28\n"
                          "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
                          "X ModifyGraph standoff=0\n"
                          "X ModifyGraph axThick=1.5\n"
                          "X ModifyGraph axisOnTop=1\n"
+                         "X Label left \"\Z28 Energy (eV)\"\n"
+                         "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                         "X SetAxis left -3,3\n"
+                         "X ModifyGraph zeroThick(left)=2.5"
                          )
 
+        if self.prefix != "":
+            waveprefix = str(self.prefix) + "_"
+        else:
+            waveprefix = self.prefix
+
+        if shift is True:
+            vbm = -10.0
+            for x in self.wave["band"]:
+                for y in x:
+                    if (y <= fermi) and (vbm <= y):
+                        vbm = y
+            self.wave["band"] -= vbm
+        else:
+            self.wave["band"] -= fermi
+
         with open(self.outfile, "w") as out:
+            # tmp = []
             out.write("IGOR\n")
             out.write("WAVES/D")
-            if self.header is not None:
-                for x in self.header:
-                    out.write(" " + str(x))
-            else:
-                for i in range(self.numitems):
-                    out.write(" wave%s" % i)
+            out.write(" %s%s" % (waveprefix, "kpath"))
+            for i in range(np.shape(self.wave["band"])[1]):
+                out.write(" %s%s_%s" % (waveprefix, "band", i))
+                # tmp.append("%s%s_%s" % (waveprefix, "band", i))
             out.write("\n")
             out.write("BEGIN\n")
-
-            for x in self.waves:
-                for y in x:
-                    out.write(" " + str(y))
+            for i in range(len(self.wave["band"])):
+                out.write(" %s" % self.wave["kpath"][i][0])
+                for values in self.wave["band"][i]:
+                    out.write(" %s" % values)
                 out.write("\n")
             out.write("END\n")
 
+            out.write("WAVES/D")
+            out.write(" %s%s\n" % (waveprefix, "k_highsym"))
+            out.write("BEGIN\n")
+            for values in self.wave["highsym"]:
+                out.write(" %s\n" % values[0])
+            out.write("END\n")
+
             if plot is True:
-                if self.header is not None:
-                    count = 0
-                    for i in range(self.numitems):
-                        if xindex == i:
-                            pass
-                        else:
-                            if count == 0:
-                                out.write("X Display %s vs %s\n" % (self.header[i], self.header[xindex]))
-                                count += 1
-                            else:
-                                out.write("X AppendToGraph %s vs %s\n" % (self.header[i], self.header[xindex]))
-
-                else:
-                    count = 0
-                    for i in range(self.numitems):
-                        if xindex == i:
-                            pass
-                        else:
-                            if count == 0:
-                                out.write("X Display wave%s vs wave%s\n" % (i, xindex))
-                                count += 1
-                            else:
-                                out.write("X AppendToGraph wave%s vs wave%s\n" % (i, xindex))
-
+                out.write("X Display %s%s_0 vs %s%s as \"%s%s\"\n" % (waveprefix, "band", waveprefix, "kpath",
+                                                                      waveprefix, "band"))
+                for i in range(np.shape(self.wave["band"])[1]):
+                    if i == 0:
+                        pass
+                    else:
+                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i, waveprefix, "kpath"))
                 out.write(layout_preset)
 
-        return
-
-    def plotband(self, plot2d=False):
         return
