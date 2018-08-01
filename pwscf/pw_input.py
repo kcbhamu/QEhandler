@@ -266,13 +266,14 @@ class PWin(object):
         return
 
     # TODO: atomic position change and adding/deleting atoms based on the space group operators
+    # TODO: rotation matrix multiplication redefine
     def unitcell_transform(self, unit=None, unitvec=None, rotate=None):
         if unitvec is not None:
             self.cellparam["vector"] = np.reshape(np.array(unitvec, dtype='d'), (3, 3))
             self.cellparam["unit"] = unit
 
         if rotate is not None:
-            self.cellparam["vector"] = np.dot(self.cellparam["vector"], np.reshape(np.array(rotate, dtype='d'), (3, 3)))
+            self.cellparam["vector"] = np.matmul(self.cellparam["vector"], np.reshape(np.array(rotate, dtype='d'), (3, 3)))
 
         if unit != self.cellparam["unit"]:
             newvec = []
