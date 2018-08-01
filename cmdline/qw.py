@@ -5,6 +5,7 @@ import os
 import sys
 import numpy as np
 from pwscf.pw_input import PWin
+from qwutils.plotigor import PlotIgor
 
 
 def executepwintags(args):
@@ -82,6 +83,16 @@ def executepwingen(args):
     p.write_pwin(args.output)
     return
 
+def executeplotband(args):
+    p = PlotIgor(args.input, args.output, args.prefix)
+    print("Reading %s ... " % args.input)
+    p.read_bands()
+    print("Done!")
+    print("Writing %s ... " % args.output)
+    p.write_bands(True, args.fermi, args.shift, args.guide)
+    print("Done!")
+    return
+
 
 def main():
     description = """qw.py
@@ -147,6 +158,20 @@ def main():
     parser_gen = pwinsubparsers.add_parser("generate")
     parser_gen.add_argument("-t", dest="tags", type=str, default=None, nargs='*')
     parser_gen.set_defaults(func=executepwingen)
+
+    parser_plot = subparsers.add_parser("plot", formatter_class=argparse.RawTextHelpFormatter, description=desc_in)
+
+    plotsubparsers = parser_plot.add_subparsers()
+
+    parser_band = plotsubparsers.add_parser("band")
+    parser_band.add_argument("-i", dest="input", type=str, default="bands.dat")
+    parser_band.add_argument("-o", dest="output", type=str, default="bands.itx")
+    parser_band.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_band.add_argument("-f", dest="fermi", type=float, default=0.0)
+    parser_band.add_argument("-s", dest="shift", action='store_true')
+    parser_band.add_argument("-g", dest="guide", action='store_true')
+    parser_band.set_defaults(func=executeplotband)
+
 
     args = parser.parse_args()
 
