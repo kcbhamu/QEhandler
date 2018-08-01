@@ -12,7 +12,7 @@ class PlotIgor(object):
         self.wave = None
         return
 
-    def readbands(self):
+    def read_bands(self):
         with open(self.infile, "r") as file:
             kpts = []
             band = []
@@ -57,7 +57,7 @@ class PlotIgor(object):
             self.wave = dic
             return
 
-    def write_band(self, fermi=0.0, shift=False, plot=True):
+    def write_bands(self, plot=True, fermi=0.0, shift=False, guide=False):
         layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
                          "X ModifyGraph width=255.118,height=340.157\n"
                          "X ModifyGraph marker=19\n"
@@ -73,13 +73,20 @@ class PlotIgor(object):
                          "X Label left \"\Z28 Energy (eV)\"\n"
                          "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                          "X SetAxis left -3,3\n"
-                         "X ModifyGraph zeroThick(left)=2.5"
+                         "X ModifyGraph zeroThick(left)=2.5\n"
                          )
 
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
         else:
-            waveprefix = self.prefix
+            waveprefix = input("Please type the system name : ") + "_"
+
+        guide_preset = ("X AppendToGraph " + waveprefix + "guide_y1 " + waveprefix + "guide_y2 vs " +
+                        waveprefix + "k_highsym\n"
+                        "X ModifyGraph mode(" + waveprefix + "guide_y1)=1,rgb(" + waveprefix + "guide_y1)=(0,0,0)\n"
+                        "X ModifyGraph mode(" + waveprefix + "guide_y2)=1,rgb(" + waveprefix + "guide_y2)=(0,0,0)\n"
+                        "X SetAxis left -3,3"
+                        )
 
         if shift is True:
             vbm = -10.0
@@ -109,10 +116,10 @@ class PlotIgor(object):
             out.write("END\n")
 
             out.write("WAVES/D")
-            out.write(" %s%s\n" % (waveprefix, "k_highsym"))
+            out.write(" %s%s %s%s %s%s\n" % (waveprefix, "k_highsym", waveprefix, "guide_y1", waveprefix, "guide_y2"))
             out.write("BEGIN\n")
             for values in self.wave["highsym"]:
-                out.write(" %s\n" % values[0])
+                out.write(" %s -30.00 30.00\n" % values[0])
             out.write("END\n")
 
             if plot is True:
@@ -124,5 +131,8 @@ class PlotIgor(object):
                     else:
                         out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i, waveprefix, "kpath"))
                 out.write(layout_preset)
+
+            if guide is True:
+                out.write(guide_preset)
 
         return
