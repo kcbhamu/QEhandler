@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import spglib
 import yaml
+import re
 
 
 # TODO: writing all namelist tags at the end of class calling to prevent overlapping writing methods
@@ -35,7 +36,7 @@ class PWin(object):
             dic = OrderedDict()
             lines = f.readlines()
             for x in lines:
-                line = x.strip("\n").strip(",")
+                line = re.sub("[,\n]", "", x)
                 if "&" in line:
                     namelist.append(line)
                     dic[line] = OrderedDict()
@@ -46,17 +47,17 @@ class PWin(object):
                     namelist.append(line.split()[0])
                     atom_pos = []
                     dic[namelist[-1]] = OrderedDict()
-                    dic[namelist[-1]]["unit"] = line.split()[1]
+                    dic[namelist[-1]]["unit"] = re.sub("[(){}]", "", line.split()[1])
                 elif "CELL_PARAMETERS" in line:
                     namelist.append(line.split()[0])
                     cell_param = []
                     dic[namelist[-1]] = OrderedDict()
-                    dic[namelist[-1]]["unit"] = line.split()[1]
+                    dic[namelist[-1]]["unit"] = re.sub("[(){}]", "", line.split()[1])
                 elif "K_POINTS" in line:
                     kp_list = []
                     namelist.append(line.split()[0])
                     dic[namelist[-1]] = OrderedDict()
-                    dic[namelist[-1]]["unit"] = line.split()[1]
+                    dic[namelist[-1]]["unit"] = re.sub("[(){}]", "", line.split()[1])
                 elif line == "":
                     pass
                 elif line == "/":
@@ -271,7 +272,7 @@ class PWin(object):
             self.cellparam["unit"] = unit
 
         if rotate is not None:
-            self.cellparam["vector"] = np.dot(self.cellparam["vector"], np.array(rotate, dtype='d'))
+            self.cellparam["vector"] = np.dot(self.cellparam["vector"], np.reshape(np.array(rotate, dtype='d'), (3, 3)))
 
         if unit != self.cellparam["unit"]:
             newvec = []
@@ -424,7 +425,7 @@ class PWin(object):
 def tag_parser(linein):
     line = linein.partition("=")
     tag = str(line[0]).strip()
-    val = str(line[2]).strip().strip("'").strip(",")
+    val = re.sub("[,']", "", str(line[2]).strip())
     return tag, val
 
 
