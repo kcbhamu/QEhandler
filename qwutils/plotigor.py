@@ -136,3 +136,24 @@ class PlotIgor(object):
                 out.write(guide_preset)
 
         return
+
+    def read_dos(self):
+        with open(self.infile, "r") as file:
+            egrid = []
+            dos = []
+
+            index = file.readline().split()
+            efermi = float(index[-2].strip())
+
+            lines = file.readlines()
+            for x in lines:
+                egrid.append(pop(x[0]))
+                dos.append(x.split())
+
+        dic = {"egrid": egrid,
+               "dos": dos,
+               "efermi": efermi
+               }
+
+        self.wave = dic
+        return
