@@ -159,6 +159,9 @@ class PlotIgor(object):
         self.wave = dic
         return
 
+    def read_pdos(self):
+        return
+
     def write_dos(self, plot=True, fermi=0.0):
         layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
                          "X ModifyGraph width=340.157,height=255.118\n"
@@ -184,13 +187,24 @@ class PlotIgor(object):
         else:
             waveprefix = input("Please type the system name : ") + "_"
 
+        if np.shape(self.wave["dos"])[1] == 2:
+            spin = False
+        else:
+            spin = True
+
+        self.wave["Egrid"] -= fermi
+
         with open(self.outfile, "w") as out:
-            # tmp = []
             out.write("IGOR\n")
             out.write("WAVES/D")
             out.write(" %s%s" % (waveprefix, "Egrid"))
-            for i in range(np.shape(self.wave["dos"])[1]):
-                out.write(" %s%s_%s" % (waveprefix, "dos", i))
+            if spin is False:
+                out.write(" %s%s" % (waveprefix, "tdos"))
+                out.write(" %s%s" % (waveprefix, "intdos"))
+            elif spin is True:
+                out.write(" %s%s" % (waveprefix, "tdos_up"))
+                out.write(" %s%s" % (waveprefix, "tdos_dw"))
+                out.write(" %s%s" % (waveprefix, "intdos"))
             out.write("\n")
             out.write("BEGIN\n")
             for i in range(len(self.wave["dos"])):
@@ -201,14 +215,8 @@ class PlotIgor(object):
             out.write("END\n")
 
             if plot is True:
-                out.write("X Display %s%s_0 vs %s%s as \"%s%s\"\n" % (waveprefix, "dos", waveprefix, "Egrid",
-                                                                      waveprefix, "dos"))
-                for i in range(np.shape(self.wave["dos"])[1]):
-                    if i == 0:
-                        pass
-                    else:
-                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "dos", i, waveprefix, "Egrid"))
+                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                          (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
                 out.write(layout_preset)
-
 
         return
