@@ -147,11 +147,11 @@ class PlotIgor(object):
 
             lines = file.readlines()
             for x in lines:
-                egrid.append(pop(x[0]))
-                dos.append(x.split())
+                egrid.append(x.split()[0])
+                dos.append(x.split()[1:])
 
-        dic = {"egrid": egrid,
-               "dos": dos,
+        dic = {"egrid": np.array(egrid, dtype='d'),
+               "dos": np.array(dos, dtype='d'),
                "efermi": efermi
                }
 
