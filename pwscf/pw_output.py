@@ -18,8 +18,8 @@ class PWout(object):
         return
 
     def read_file(self):
-        with open(self.infile, "r") as file:
-            f = file.readlines()
+        with open(self.infile, "r") as infile:
+            f = infile.readlines()
             # for line in f:
             #     return
 
