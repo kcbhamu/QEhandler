@@ -4,6 +4,7 @@ import re
 import argparse
 
 
+# TODO: empty prefix to the hasattr method
 class PlotIgor(object):
     def __init__(self, infile, outfile=None, prefix=None):
         self.infile = infile
@@ -13,18 +14,18 @@ class PlotIgor(object):
         return
 
     def read_bands(self):
-        with open(self.infile, "r") as file:
+        with open(self.infile, "r") as bandfile:
             kpts = []
             band = []
             kpath = []
             highsym = []
 
-            index = file.readline().split()
+            index = bandfile.readline().split()
             numbands = int(index[2].strip(","))
             numkpts = int(index[4].strip())
             bandperline = int(np.ceil(numbands / 10))
 
-            lines = file.readlines()
+            lines = bandfile.readlines()
             for i in range(numkpts):
                 kpts.append(lines[i * (bandperline + 1)].split())
 
@@ -138,14 +139,14 @@ class PlotIgor(object):
         return
 
     def read_dos(self):
-        with open(self.infile, "r") as file:
+        with open(self.infile, "r") as dosfile:
             egrid = []
             dos = []
 
-            index = file.readline().split()
+            index = dosfile.readline().split()
             efermi = float(index[-2].strip())
 
-            lines = file.readlines()
+            lines = dosfile.readlines()
             for x in lines:
                 egrid.append(x.split()[0])
                 dos.append(x.split()[1:])
@@ -156,4 +157,58 @@ class PlotIgor(object):
                }
 
         self.wave = dic
+        return
+
+    def write_dos(self, plot=True, fermi=0.0):
+        layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                         "X ModifyGraph width=340.157,height=255.118\n"
+                         "X ModifyGraph marker=19\n"
+                         "X ModifyGraph lSize=1.5\n"
+                         "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                         "X ModifyGraph mirror=1\n"
+                         "X ModifyGraph zero(left)=8\n"
+                         "X ModifyGraph fSize=28\n"
+                         "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                         "X ModifyGraph standoff=0\n"
+                         "X ModifyGraph axThick=1.5\n"
+                         "X ModifyGraph axisOnTop=1\n"
+                         "X Label bottom \"\Z28 Energy (eV)\"\n"
+                         "X Label left \"\Z28 DOS (arb. unit)\"\n"
+                         "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                         "X SetAxis bottom -3,3\n"
+                         "X ModifyGraph zeroThick(left)=2.5\n"
+                         )
+
+        if self.prefix != "":
+            waveprefix = str(self.prefix) + "_"
+        else:
+            waveprefix = input("Please type the system name : ") + "_"
+
+        with open(self.outfile, "w") as out:
+            # tmp = []
+            out.write("IGOR\n")
+            out.write("WAVES/D")
+            out.write(" %s%s" % (waveprefix, "Egrid"))
+            for i in range(np.shape(self.wave["dos"])[1]):
+                out.write(" %s%s_%s" % (waveprefix, "dos", i))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(len(self.wave["dos"])):
+                out.write(" %s" % self.wave["Egrid"][i][0])
+                for values in self.wave["dos"][i]:
+                    out.write(" %s" % values)
+                out.write("\n")
+            out.write("END\n")
+
+            if plot is True:
+                out.write("X Display %s%s_0 vs %s%s as \"%s%s\"\n" % (waveprefix, "dos", waveprefix, "Egrid",
+                                                                      waveprefix, "dos"))
+                for i in range(np.shape(self.wave["dos"])[1]):
+                    if i == 0:
+                        pass
+                    else:
+                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "dos", i, waveprefix, "Egrid"))
+                out.write(layout_preset)
+
+
         return
