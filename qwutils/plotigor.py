@@ -215,8 +215,12 @@ class PlotIgor(object):
             out.write("END\n")
 
             if plot is True:
-                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                          (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
+                if spin is True:
+                    out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                              (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
+                elif spin is False:
+                    out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                              (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
                 out.write(layout_preset)
 
         return
