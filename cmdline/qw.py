@@ -94,6 +94,17 @@ def executeplotband(args):
     return
 
 
+def executeplotdos(args):
+    p = PlotIgor(args.input, args.output, args.prefix)
+    print("Reading %s ... " % args.input)
+    p.read_dos()
+    print("Done!")
+    print("Writing %s ... " % args.output)
+    p.write_dos(True, args.fermi)
+    print("Done!")
+    return
+
+
 def main():
     description = """qw.py
     Type qw.py [function] --help for more detailed informations.
@@ -172,6 +183,12 @@ def main():
     parser_band.add_argument("-g", dest="guide", action='store_true')
     parser_band.set_defaults(func=executeplotband)
 
+    parser_dos = plotsubparsers.add_parser("dos")
+    parser_dos.add_argument("-i", dest="input", type=str, default="bands.dat")
+    parser_dos.add_argument("-o", dest="output", type=str, default="bands.itx")
+    parser_dos.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_dos.add_argument("-f", dest="fermi", type=float, default=0.0)
+    parser_dos.set_defaults(func=executeplotdos)
 
     args = parser.parse_args()
 
