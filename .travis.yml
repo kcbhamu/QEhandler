@@ -1,5 +1,6 @@
 language: python
 cache: pip
+dist: trusty
 sudo: false
 
 python:
@@ -11,6 +12,6 @@ install:
     - python setup.py install
 
 # run tests -- will add proper test suite
-#script:
-#    - cd tests
+script:
+    - cd tests
 #    - py.test
