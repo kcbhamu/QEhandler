@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 
 import argparse
-import os
 import sys
 import numpy as np
 from pwscf.pw_input import PWin
@@ -82,6 +81,7 @@ def executepwingen(args):
     p.generate_pwin(args.tags)
     p.write_pwin(args.output)
     return
+
 
 def executeplotband(args):
     p = PlotIgor(args.input, args.output, args.prefix)
