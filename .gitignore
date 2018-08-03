@@ -189,5 +189,5 @@ venv.bak/
 .mypy_cache/
 
 # custom
-*test*
+*test
 .idea/
