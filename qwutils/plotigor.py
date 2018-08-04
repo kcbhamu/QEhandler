@@ -105,7 +105,7 @@ class PlotIgor(object):
             out.write("WAVES/D")
             out.write(" %s%s" % (waveprefix, "kpath"))
             for i in range(np.shape(self.wave["band"])[1]):
-                out.write(" %s%s_%s" % (waveprefix, "band", i))
+                out.write(" %s%s_%s" % (waveprefix, "band", i + 1))
                 # tmp.append("%s%s_%s" % (waveprefix, "band", i))
             out.write("\n")
             out.write("BEGIN\n")
@@ -159,7 +159,30 @@ class PlotIgor(object):
         self.wave = dic
         return
 
-    def read_pdos(self):
+    def read_pdos(self, set=False, combine=False):
+        with open(self.infile, "r") as pdosfile:
+            egrid = []
+            dos = []
+
+            index = pdosfile.readline().split()
+            if index[1] == "ik":
+                kproj = True
+            else:
+                kproj = False
+
+
+
+            lines = pdosfile.readlines()
+            for x in lines:
+                egrid.append(x.split()[0])
+                dos.append(x.split()[1:])
+
+        dic = {"egrid": np.array(egrid, dtype='d'),
+               "dos": np.array(dos, dtype='d'),
+               "efermi": efermi
+               }
+
+        self.wave = dic
         return
 
     def write_dos(self, plot=True, fermi=0.0):
