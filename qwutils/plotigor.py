@@ -160,22 +160,34 @@ class PlotIgor(object):
         return
 
     def read_pdos(self, set=False, combine=False):
-        with open(self.infile, "r") as pdosfile:
-            egrid = []
-            dos = []
+        if set is False:
+            with open(self.infile, "r") as pdosfile:
+                egrid = []
+                dos = []
+                kp = []
 
-            index = pdosfile.readline().split()
-            if index[1] == "ik":
-                kproj = True
-            else:
-                kproj = False
+                index = pdosfile.readline().split()
+                if index[1] == "ik":
+                    kproj = True
+                else:
+                    kproj = False
 
+                if kproj is False:
+                    lines = pdosfile.readlines()
+                    for x in lines:
+                        egrid.append(x.split()[0])
+                        dos.append(x.split()[1:])
 
+                elif kproj is True:
+                    lines = pdosfile.readlines()
+                    for x in lines:
+                        if len(x) == 0:
+                            pass
+                        else:
+                            kp.append(x.split()[0])
+                            egrid.append(x.split()[1])
+                            dos.append(x.split()[1:])
 
-            lines = pdosfile.readlines()
-            for x in lines:
-                egrid.append(x.split()[0])
-                dos.append(x.split()[1:])
 
         dic = {"egrid": np.array(egrid, dtype='d'),
                "dos": np.array(dos, dtype='d'),
