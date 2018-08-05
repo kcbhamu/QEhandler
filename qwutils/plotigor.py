@@ -159,40 +159,35 @@ class PlotIgor(object):
         self.wave = dic
         return
 
-    def read_pdos(self, set=False, combine=False):
-        if set is False:
-            with open(self.infile, "r") as pdosfile:
-                egrid = []
-                dos = []
+    def read_pdos(self, combine=False):
+        with open(self.infile, "r") as pdosfile:
+            egrid = []
+            dos = []
+
+            index = pdosfile.readline().split()
+            if index[1] == "ik":
+                kproj = True
                 kp = []
+            else:
+                kproj = False
 
-                index = pdosfile.readline().split()
-                if index[1] == "ik":
-                    kproj = True
-                else:
-                    kproj = False
-
-                if kproj is False:
-                    lines = pdosfile.readlines()
-                    for x in lines:
-                        egrid.append(x.split()[0])
-                        dos.append(x.split()[1:])
-
+            lines = pdosfile.readlines()
+            for x in lines:
+                if len(x) == 0:
+                    pass
+                elif kproj is False:
+                    egrid.append(x.split()[0])
+                    dos.append(x.split()[1:])
                 elif kproj is True:
-                    lines = pdosfile.readlines()
-                    for x in lines:
-                        if len(x) == 0:
-                            pass
-                        else:
-                            kp.append(x.split()[0])
-                            egrid.append(x.split()[1])
-                            dos.append(x.split()[1:])
+                    kp.append(x.split()[0])
+                    egrid.append(x.split()[1])
+                    dos.append(x.split()[2:])
 
-
-        dic = {"egrid": np.array(egrid, dtype='d'),
-               "dos": np.array(dos, dtype='d'),
-               "efermi": efermi
-               }
+        if combine is False:
+            dic = {"egrid": np.array(egrid, dtype='d'),
+                   "dos": np.array(dos, dtype='d'),
+                   "efermi": efermi
+                   }
 
         self.wave = dic
         return
