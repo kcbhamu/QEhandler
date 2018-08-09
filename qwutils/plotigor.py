@@ -1,3 +1,4 @@
+from qwutils.generalutils import Unitconverter
 import math
 import numpy as np
 import re
@@ -58,17 +59,16 @@ class PlotIgor(object):
                       "X ModifyGraph width=340.157,height=255.118\n"
                       "X ModifyGraph marker=19\n"
                       "X ModifyGraph lSize=1.5\n"
-                      "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                      "X ModifyGraph tick=2\n"
                       "X ModifyGraph mirror=1\n"
                       "X ModifyGraph fSize=28\n"
                       "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
                       "X ModifyGraph standoff=0\n"
                       "X ModifyGraph axThick=1.5\n"
                       "X ModifyGraph axisOnTop=1\n"
-                      "X Label bottom \"\Z28 Distance ()\"\n"
+                      "X Label bottom \"\Z28 Distance (\{num2char(129)})\"\n"
                       "X Label left \"\Z28 Energy (eV)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                      "X SetAxis bottom -3,3\n"
                       "X ModifyGraph zeroThick(left)=2.5\n"
                       )
 
@@ -293,21 +293,21 @@ class PlotIgor(object):
 
     def read_wf(self):
         with open(self.infile, "r") as wffile:
-            egrid = []
+            distance = []
             macro = []
             planar = []
             lines = wffile.readlines()
 
             for x in lines:
-                egrid.append(x.split()[0])
-                macro.append(x.split()[1])
-                planar.append(x.split()[2])
+                distance.append(Unitconverter.unit_convert(float(x.split()[0]), "length", "bohr", "ang"))
+                planar.append(Unitconverter.unit_convert(float(x.split()[1]), "energy", "Ry", "eV"))
+                macro.append(Unitconverter.unit_convert(float(x.split()[2]), "energy", "Ry", "eV"))
 
-            egrid = np.array(egrid, dtype='d')
+            distance = np.array(distance, dtype='d')
             macro = np.array(macro, dtype='d')
             planar = np.array(planar, dtype='d')
 
-            dic = {"egrid": np.reshape(egrid, (len(egrid), 1)),
+            dic = {"distance": np.reshape(distance, (len(distance), 1)),
                    "macro": np.reshape(macro, (len(macro), 1)),
                    "planar": np.reshape(planar, (len(planar), 1)),
                    }
@@ -324,10 +324,10 @@ class PlotIgor(object):
 
             out.write("IGOR\n")
             out.write("WAVES/D")
-            out.write(" %s%s  %s%s  %s%s\n" % (waveprefix, "Egrid", waveprefix, "Macroavg", waveprefix, "Planaravg"))
+            out.write(" %s%s  %s%s  %s%s\n" % (waveprefix, "Distance", waveprefix, "Macroavg", waveprefix, "Planaravg"))
             out.write("BEGIN\n")
-            for i in range(len(self.wave["egrid"])):
-                out.write(" %s" % self.wave["egrid"][i][0])
+            for i in range(len(self.wave["distance"])):
+                out.write(" %s" % self.wave["distance"][i][0])
                 out.write(" %s" % self.wave["macro"][i][0])
                 out.write(" %s" % self.wave["planar"][i][0])
                 out.write("\n")
@@ -335,8 +335,8 @@ class PlotIgor(object):
 
             if plot is True:
                 out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                          (waveprefix, "Macroavg", waveprefix, "Egrid", waveprefix, "potential"))
-                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Egrid"))
+                          (waveprefix, "Macroavg", waveprefix, "Distance", waveprefix, "potential"))
+                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Distance"))
                 out.write(self.layout_preset("wf"))
 
         return
