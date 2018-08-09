@@ -13,7 +13,8 @@ class PlotIgor(object):
         self.wave = None
         return
 
-    def layout_preset(self, plottype):
+    @staticmethod
+    def layout_preset(plottype):
         if plottype == "band":
             preset = ("X DefaultFont/U \"Times New Roman\"\n"
                       "X ModifyGraph width=255.118,height=340.157\n"
@@ -119,24 +120,6 @@ class PlotIgor(object):
             return
 
     def write_bands(self, plot=True, fermi=0.0, shift=False, guide=False):
-        layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
-                         "X ModifyGraph width=255.118,height=340.157\n"
-                         "X ModifyGraph marker=19\n"
-                         "X ModifyGraph lSize=1.5\n"
-                         "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
-                         "X ModifyGraph mirror=1\n"
-                         "X ModifyGraph zero(left)=8\n"
-                         "X ModifyGraph fSize=28\n"
-                         "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
-                         "X ModifyGraph standoff=0\n"
-                         "X ModifyGraph axThick=1.5\n"
-                         "X ModifyGraph axisOnTop=1\n"
-                         "X Label left \"\Z28 Energy (eV)\"\n"
-                         "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                         "X SetAxis left -3,3\n"
-                         "X ModifyGraph zeroThick(left)=2.5\n"
-                         )
-
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
         else:
@@ -262,29 +245,9 @@ class PlotIgor(object):
         elif combine is True:
             pass
 
-
         return
 
     def write_dos(self, plot=True, fermi=0.0):
-        layout_preset = ("X DefaultFont/U \"Times New Roman\"\n"
-                         "X ModifyGraph width=340.157,height=255.118\n"
-                         "X ModifyGraph marker=19\n"
-                         "X ModifyGraph lSize=1.5\n"
-                         "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
-                         "X ModifyGraph mirror=1\n"
-                         "X ModifyGraph zero(left)=8\n"
-                         "X ModifyGraph fSize=28\n"
-                         "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
-                         "X ModifyGraph standoff=0\n"
-                         "X ModifyGraph axThick=1.5\n"
-                         "X ModifyGraph axisOnTop=1\n"
-                         "X Label bottom \"\Z28 Energy (eV)\"\n"
-                         "X Label left \"\Z28 DOS (arb. unit)\"\n"
-                         "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                         "X SetAxis bottom -3,3\n"
-                         "X ModifyGraph zeroThick(left)=2.5\n"
-                         )
-
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
         else:
