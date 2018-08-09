@@ -151,8 +151,11 @@ class PlotIgor(object):
                 egrid.append(x.split()[0])
                 dos.append(x.split()[1:])
 
-        dic = {"egrid": np.array(egrid, dtype='d'),
-               "dos": np.array(dos, dtype='d'),
+        egrid = np.array(egrid, dtype='d')
+        dos = np.array(dos, dtype='d')
+
+        dic = {"egrid": np.reshape(egrid, (1, len(egrid), 1)),
+               "dos": np.reshape(dos, (1, np.shape(dos)[0], np.shape(dos)[1])),
                "efermi": efermi
                }
 
@@ -183,13 +186,23 @@ class PlotIgor(object):
                     egrid.append(x.split()[1])
                     dos.append(x.split()[2:])
 
+        egrid = np.array(egrid, dtype='d')
+        dos = np.array(dos, dtype='d')
+
+        if hasattr(kp):
+            kp = np.array(kp, dtype='i')
+
         if combine is False:
-            dic = {"egrid": np.array(egrid, dtype='d'),
-                   "dos": np.array(dos, dtype='d'),
+            dic = {"egrid": np.reshape(egrid, (1, len(egrid), 1)),
+                   "dos": np.reshape(dos, (1, np.shape(dos)[0], np.shape(dos)[1])),
                    "efermi": efermi
                    }
+            self.wave = dic
 
-        self.wave = dic
+        elif combine is True:
+            pass
+
+
         return
 
     def write_dos(self, plot=True, fermi=0.0):
@@ -252,5 +265,30 @@ class PlotIgor(object):
                     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
                               (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
                 out.write(layout_preset)
+
+        return
+
+    def read_wf(self):
+        with open(self.infile, "r") as wffile:
+            egrid = []
+            macro = []
+            planar = []
+            lines = wffile.readlines()
+
+            for x in lines:
+                egrid.append(x.split()[0])
+                macro.append(x.split()[1])
+                planar.append(x.split()[2])
+
+            egrid = np.array(egrid, dtype='d')
+            macro = np.array(macro, dtype='d')
+            planar = np.array(planar, dtype='d')
+
+            dic = {"egrid": np.reshape(egrid, (len(egrid), 1)),
+                   "macro": np.reshape(macro, (len(macro), 1)),
+                   "planar": np.reshape(planar, (len(planar), 1)),
+                   }
+
+        self.wave = dic
 
         return
