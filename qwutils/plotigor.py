@@ -13,6 +13,66 @@ class PlotIgor(object):
         self.wave = None
         return
 
+    def layout_preset(self, plottype):
+        if plottype == "band":
+            preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                      "X ModifyGraph width=255.118,height=340.157\n"
+                      "X ModifyGraph marker=19\n"
+                      "X ModifyGraph lSize=1.5\n"
+                      "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                      "X ModifyGraph mirror=1\n"
+                      "X ModifyGraph zero(left)=8\n"
+                      "X ModifyGraph fSize=28\n"
+                      "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                      "X ModifyGraph standoff=0\n"
+                      "X ModifyGraph axThick=1.5\n"
+                      "X ModifyGraph axisOnTop=1\n"
+                      "X Label left \"\Z28 Energy (eV)\"\n"
+                      "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                      "X SetAxis left -3,3\n"
+                      "X ModifyGraph zeroThick(left)=2.5\n"
+                      )
+        elif plottype == "dos":
+            preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                      "X ModifyGraph width=340.157,height=255.118\n"
+                      "X ModifyGraph marker=19\n"
+                      "X ModifyGraph lSize=1.5\n"
+                      "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                      "X ModifyGraph mirror=1\n"
+                      "X ModifyGraph zero(left)=8\n"
+                      "X ModifyGraph fSize=28\n"
+                      "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                      "X ModifyGraph standoff=0\n"
+                      "X ModifyGraph axThick=1.5\n"
+                      "X ModifyGraph axisOnTop=1\n"
+                      "X Label bottom \"\Z28 Energy (eV)\"\n"
+                      "X Label left \"\Z28 DOS (arb. unit)\"\n"
+                      "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                      "X SetAxis bottom -3,3\n"
+                      "X ModifyGraph zeroThick(left)=2.5\n"
+                      )
+
+        elif plottype == "wf":
+            preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                      "X ModifyGraph width=340.157,height=255.118\n"
+                      "X ModifyGraph marker=19\n"
+                      "X ModifyGraph lSize=1.5\n"
+                      "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                      "X ModifyGraph mirror=1\n"
+                      "X ModifyGraph fSize=28\n"
+                      "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                      "X ModifyGraph standoff=0\n"
+                      "X ModifyGraph axThick=1.5\n"
+                      "X ModifyGraph axisOnTop=1\n"
+                      "X Label bottom \"\Z28 Distance ()\"\n"
+                      "X Label left \"\Z28 Energy (eV)\"\n"
+                      "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                      "X SetAxis bottom -3,3\n"
+                      "X ModifyGraph zeroThick(left)=2.5\n"
+                      )
+
+        return preset
+
     def read_bands(self):
         with open(self.infile, "r") as bandfile:
             kpts = []
@@ -131,7 +191,7 @@ class PlotIgor(object):
                         pass
                     else:
                         out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i, waveprefix, "kpath"))
-                out.write(layout_preset)
+                out.write(self.layout_preset("band"))
 
             if guide is True:
                 out.write(guide_preset)
@@ -235,7 +295,7 @@ class PlotIgor(object):
         else:
             spin = True
 
-        self.wave["Egrid"] -= fermi
+        self.wave["egrid"] -= fermi
 
         with open(self.outfile, "w") as out:
             out.write("IGOR\n")
@@ -251,7 +311,7 @@ class PlotIgor(object):
             out.write("\n")
             out.write("BEGIN\n")
             for i in range(len(self.wave["dos"])):
-                out.write(" %s" % self.wave["Egrid"][i][0])
+                out.write(" %s" % self.wave["egrid"][i][0])
                 for values in self.wave["dos"][i]:
                     out.write(" %s" % values)
                 out.write("\n")
@@ -264,7 +324,7 @@ class PlotIgor(object):
                 elif spin is False:
                     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
                               (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
-                out.write(layout_preset)
+                out.write(self.layout_preset("dos"))
 
         return
 
@@ -288,7 +348,32 @@ class PlotIgor(object):
                    "macro": np.reshape(macro, (len(macro), 1)),
                    "planar": np.reshape(planar, (len(planar), 1)),
                    }
-
         self.wave = dic
+        return
+
+    def write_wf(self, plot=True):
+        with open(self.outfile, "w") as out:
+
+            if self.prefix != "":
+                waveprefix = str(self.prefix) + "_"
+            else:
+                waveprefix = input("Please type the system name : ") + "_"
+
+            out.write("IGOR\n")
+            out.write("WAVES/D")
+            out.write(" %s%s  %s%s  %s%s\n" % (waveprefix, "Egrid", waveprefix, "Macroavg", waveprefix, "Planaravg"))
+            out.write("BEGIN\n")
+            for i in range(len(self.wave["egrid"])):
+                out.write(" %s" % self.wave["egrid"][i][0])
+                out.write(" %s" % self.wave["macro"][i][0])
+                out.write(" %s" % self.wave["planar"][i][0])
+                out.write("\n")
+            out.write("END\n")
+
+            if plot is True:
+                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                          (waveprefix, "Macroavg", waveprefix, "Egrid", waveprefix, "potential"))
+                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Egrid"))
+                out.write(self.layout_preset("wf"))
 
         return
