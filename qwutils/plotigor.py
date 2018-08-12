@@ -368,7 +368,7 @@ class PlotIgor(object):
 
         if real is not None:
             tmp = reader(real)
-            dic["e_e1"] = tmp[0]
+            dic["e1_E"] = tmp[0]
             dic["e1"] = tmp[1]
             if direction is True:
                 dic["e1_x"] = tmp[2]
@@ -376,8 +376,8 @@ class PlotIgor(object):
                 dic["e1_z"] = tmp[4]
 
         if imag is not None:
-            tmp = reader(real)
-            dic["e_e2"] = tmp[0]
+            tmp = reader(imag)
+            dic["e2_E"] = tmp[0]
             dic["e2"] = tmp[1]
             if direction is True:
                 dic["e2_x"] = tmp[2]
@@ -385,8 +385,8 @@ class PlotIgor(object):
                 dic["e2_z"] = tmp[4]
 
         if ieps is not None:
-            tmp = reader(real)
-            dic["e_diag"] = tmp[0]
+            tmp = reader(ieps)
+            dic["diag_E"] = tmp[0]
             dic["diag"] = tmp[1]
             if direction is True:
                 dic["diag_x"] = tmp[2]
@@ -394,8 +394,8 @@ class PlotIgor(object):
                 dic["diag_z"] = tmp[4]
 
         if eels is not None:
-            tmp = reader(real)
-            dic["e_eels"] = tmp[0]
+            tmp = reader(eels)
+            dic["eels_E"] = tmp[0]
             dic["eels"] = tmp[1]
             if direction is True:
                 dic["eels_x"] = tmp[2]
@@ -407,7 +407,7 @@ class PlotIgor(object):
 
     def write_diel(self, plot=True):
         with open(self.outfile, "w") as out:
-
+            wavename = []
             if self.prefix != "":
                 waveprefix = str(self.prefix) + "_"
             else:
@@ -415,8 +415,17 @@ class PlotIgor(object):
 
             out.write("IGOR\n")
             out.write("WAVES/D")
-            out.write(" %s%s  %s%s  %s%s\n" % (waveprefix, "Distance", waveprefix, "Macroavg", waveprefix, "Planaravg"))
+            for x in self.wave.keys():
+                out.write(" %s%s" % (waveprefix, x))
+                wavename.append(x)
+            out.write("\n")
             out.write("BEGIN\n")
+
+            for i in range(len(self.wave[wavename[0]])):
+                for x in wavename:
+                    out.write(" %s" % self.wave[x][i])
+                pass
+
             for i in range(len(self.wave["distance"])):
                 out.write(" %s" % self.wave["distance"][i][0])
                 out.write(" %s" % self.wave["macro"][i][0])
