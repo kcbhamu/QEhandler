@@ -118,7 +118,7 @@ def executeplotwf(args):
 
 def executeplotdiel(args):
     p = PlotIgor(None, args.output, args.prefix)
-    print("Parsing dielectric functions ... " % args.input)
+    print("Parsing dielectric functions ... ")
     p.read_diel(args.real, args.imag, args.diag, args.eels, args.direction)
     print("Done!")
     print("Writing %s ... " % args.output)
