@@ -89,7 +89,7 @@ def executeplotband(args):
     p.read_bands()
     print("Done!")
     print("Writing %s ... " % args.output)
-    p.write_bands(True, args.fermi, args.shift, args.guide)
+    p.write_bands(args.plot, args.fermi, args.shift, args.guide)
     print("Done!")
     return
 
@@ -100,7 +100,29 @@ def executeplotdos(args):
     p.read_dos()
     print("Done!")
     print("Writing %s ... " % args.output)
-    p.write_dos(True, args.fermi)
+    p.write_dos(args.plot, args.fermi)
+    print("Done!")
+    return
+
+
+def executeplotwf(args):
+    p = PlotIgor(args.input, args.output, args.prefix)
+    print("Reading %s ... " % args.input)
+    p.read_wf()
+    print("Done!")
+    print("Writing %s ... " % args.output)
+    p.write_wf(args.plot)
+    print("Done!")
+    return
+
+
+def executeplotdiel(args):
+    p = PlotIgor(None, args.output, args.prefix)
+    print("Parsing dielectric functions ... " % args.input)
+    p.read_diel(args.real, args.imag, args.diag, args.eels, args.direction)
+    print("Done!")
+    print("Writing %s ... " % args.output)
+    p.write_diel(args.plot)
     print("Done!")
     return
 
@@ -181,6 +203,7 @@ def main():
     parser_band.add_argument("-f", dest="fermi", type=float, default=0.0)
     parser_band.add_argument("-s", dest="shift", action='store_true')
     parser_band.add_argument("-g", dest="guide", action='store_true')
+    parser_band.add_argument("-P", dest="plot", action='store_false')
     parser_band.set_defaults(func=executeplotband)
 
     parser_dos = plotsubparsers.add_parser("dos")
@@ -188,7 +211,26 @@ def main():
     parser_dos.add_argument("-o", dest="output", type=str, default="bands.itx")
     parser_dos.add_argument("-p", dest="prefix", type=str, default=None)
     parser_dos.add_argument("-f", dest="fermi", type=float, default=0.0)
+    parser_dos.add_argument("-P", dest="plot", action='store_false')
     parser_dos.set_defaults(func=executeplotdos)
+
+    parser_wf = plotsubparsers.add_parser("wf")
+    parser_wf.add_argument("-i", dest="input", type=str, default="avg.dat")
+    parser_wf.add_argument("-o", dest="output", type=str, default="avg.itx")
+    parser_wf.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_wf.add_argument("-P", dest="plot", action='store_false')
+    parser_wf.set_defaults(func=executeplotwf)
+
+    parser_diel = plotsubparsers.add_parser("diel")
+    parser_diel.add_argument("-i", dest="imag", type=str, default="epsi_pwscf.dat")
+    parser_diel.add_argument("-r", dest="real", type=str, default="epsr_pwscf.dat")
+    parser_diel.add_argument("-d", dest="diag", type=str, default="ieps_pwscf.dat")
+    parser_diel.add_argument("-e", dest="eels", type=str, default="eels_pwscf.dat")
+    parser_diel.add_argument("-o", dest="output", type=str, default="avg.itx")
+    parser_diel.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_diel.add_argument("-P", dest="plot", action='store_false')
+    parser_diel.add_argument("-D", dest="direction", action='store_true')
+    parser_diel.set_defaults(func=executeplotdiel)
 
     args = parser.parse_args()
 
