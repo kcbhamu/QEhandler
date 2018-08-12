@@ -226,7 +226,7 @@ def main():
     parser_diel.add_argument("-r", dest="real", type=str, default="epsr_pwscf.dat")
     parser_diel.add_argument("-d", dest="diag", type=str, default="ieps_pwscf.dat")
     parser_diel.add_argument("-e", dest="eels", type=str, default="eels_pwscf.dat")
-    parser_diel.add_argument("-o", dest="output", type=str, default="avg.itx")
+    parser_diel.add_argument("-o", dest="output", type=str, default="epsilon.itx")
     parser_diel.add_argument("-p", dest="prefix", type=str, default=None)
     parser_diel.add_argument("-P", dest="plot", action='store_false')
     parser_diel.add_argument("-D", dest="direction", action='store_true')
