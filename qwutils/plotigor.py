@@ -340,3 +340,35 @@ class PlotIgor(object):
                 out.write(self.layout_preset("wf"))
 
         return
+
+    def read_diel(self, real=None, imag=None, ieps=None, eels=None):
+        dic = {}
+
+        def reader(infile):
+            with open(infile, "r") as file:
+                e = []
+                x = []
+                y = []
+                z = []
+                lines = file.readlines()
+
+                for i in range(len(lines) - 2):
+                    e.append(lines[i + 2].split()[0])
+                    x.append(lines[i + 2].split()[1])
+                    y.append(lines[i + 2].split()[2])
+                    z.append(lines[i + 2].split()[3])
+
+                e = np.array(e, dtype='d')
+                x = np.array(x, dtype='d')
+                y = np.array(y, dtype='d')
+                z = np.array(z, dtype='d')
+                avg = (x + y + z) / 3
+
+            return e, [avg, x, y, z]
+
+        if real is not None:
+            tmp = reader(real)
+            dic["e_e1"] = tmp[0]
+            dic["e1"] = tmp[1]
+
+        return
