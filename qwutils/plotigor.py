@@ -85,7 +85,7 @@ class PlotIgor(object):
                       "X Label bottom \"\Z28Photon Energy (eV))\"\n"
                       "X Label left \"\Z28\F'Symbol'e\B%s\M\F'Times New Roman' (a.u.)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                      "ModifyGraph zero(left)=8,zeroThick(left)=1.5\n"
+                      "X ModifyGraph zero(left)=8,zeroThick(left)=1.5\n"
                       % option)
 
         return preset
