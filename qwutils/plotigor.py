@@ -341,7 +341,7 @@ class PlotIgor(object):
 
         return
 
-    def read_diel(self, real=None, imag=None, ieps=None, eels=None):
+    def read_diel(self, real=None, imag=None, ieps=None, eels=None, direction=False):
         dic = {}
 
         def reader(infile):
@@ -364,11 +364,70 @@ class PlotIgor(object):
                 z = np.array(z, dtype='d')
                 avg = (x + y + z) / 3
 
-            return e, [avg, x, y, z]
+            return e, avg, x, y, z
 
         if real is not None:
             tmp = reader(real)
             dic["e_e1"] = tmp[0]
             dic["e1"] = tmp[1]
+            if direction is True:
+                dic["e1_x"] = tmp[2]
+                dic["e1_y"] = tmp[3]
+                dic["e1_z"] = tmp[4]
+
+        if imag is not None:
+            tmp = reader(real)
+            dic["e_e2"] = tmp[0]
+            dic["e2"] = tmp[1]
+            if direction is True:
+                dic["e2_x"] = tmp[2]
+                dic["e2_y"] = tmp[3]
+                dic["e2_z"] = tmp[4]
+
+        if ieps is not None:
+            tmp = reader(real)
+            dic["e_diag"] = tmp[0]
+            dic["diag"] = tmp[1]
+            if direction is True:
+                dic["diag_x"] = tmp[2]
+                dic["diag_y"] = tmp[3]
+                dic["diag_z"] = tmp[4]
+
+        if eels is not None:
+            tmp = reader(real)
+            dic["e_eels"] = tmp[0]
+            dic["eels"] = tmp[1]
+            if direction is True:
+                dic["eels_x"] = tmp[2]
+                dic["eels_y"] = tmp[3]
+                dic["eels_z"] = tmp[4]
+
+        self.wave = dic
+        return
+
+    def write_diel(self, plot=True):
+        with open(self.outfile, "w") as out:
+
+            if self.prefix != "":
+                waveprefix = str(self.prefix) + "_"
+            else:
+                waveprefix = input("Please type the system name : ") + "_"
+
+            out.write("IGOR\n")
+            out.write("WAVES/D")
+            out.write(" %s%s  %s%s  %s%s\n" % (waveprefix, "Distance", waveprefix, "Macroavg", waveprefix, "Planaravg"))
+            out.write("BEGIN\n")
+            for i in range(len(self.wave["distance"])):
+                out.write(" %s" % self.wave["distance"][i][0])
+                out.write(" %s" % self.wave["macro"][i][0])
+                out.write(" %s" % self.wave["planar"][i][0])
+                out.write("\n")
+            out.write("END\n")
+
+            if plot is True:
+                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                          (waveprefix, "Macroavg", waveprefix, "Distance", waveprefix, "potential"))
+                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Distance"))
+                out.write(self.layout_preset("wf"))
 
         return
