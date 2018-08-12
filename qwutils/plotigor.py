@@ -15,7 +15,7 @@ class PlotIgor(object):
         return
 
     @staticmethod
-    def layout_preset(plottype):
+    def layout_preset(plottype, option=None):
         if plottype == "band":
             preset = ("X DefaultFont/U \"Times New Roman\"\n"
                       "X ModifyGraph width=255.118,height=340.157\n"
@@ -32,7 +32,7 @@ class PlotIgor(object):
                       "X Label left \"\Z28 Energy (eV)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                       "X SetAxis left -3,3\n"
-                      "X ModifyGraph zeroThick(left)=2.5\n"
+                      "X ModifyGraph zeroThick(left)=1.5\n"
                       )
         elif plottype == "dos":
             preset = ("X DefaultFont/U \"Times New Roman\"\n"
@@ -51,7 +51,6 @@ class PlotIgor(object):
                       "X Label left \"\Z28 DOS (arb. unit)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                       "X SetAxis bottom -3,3\n"
-                      "X ModifyGraph zeroThick(left)=2.5\n"
                       )
 
         elif plottype == "wf":
@@ -69,8 +68,25 @@ class PlotIgor(object):
                       "X Label bottom \"\Z28 Distance (\{num2char(129)})\"\n"
                       "X Label left \"\Z28 Energy (eV)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                      "X ModifyGraph zeroThick(left)=2.5\n"
                       )
+
+        elif plottype == "diel":
+            preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                      "X ModifyGraph width=340.157,height=255.118\n"
+                      "X ModifyGraph marker=19\n"
+                      "X ModifyGraph lSize=1.5\n"
+                      "X ModifyGraph tick=2\n"
+                      "X ModifyGraph mirror=1\n"
+                      "X ModifyGraph fSize=28\n"
+                      "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                      "X ModifyGraph standoff=0\n"
+                      "X ModifyGraph axThick=1.5\n"
+                      "X ModifyGraph axisOnTop=1\n"
+                      "X Label bottom \"\Z28Photon Energy (eV))\"\n"
+                      "X Label left \"\Z28\F'Symbol'e\B%s\M\F'Times New Roman' (a.u.)\"\n"
+                      "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                      "ModifyGraph zero(left)=8,zeroThick(left)=1.5\n"
+                      % option)
 
         return preset
 
@@ -424,19 +440,14 @@ class PlotIgor(object):
             for i in range(len(self.wave[wavename[0]])):
                 for x in wavename:
                     out.write(" %s" % self.wave[x][i])
-                pass
-
-            for i in range(len(self.wave["distance"])):
-                out.write(" %s" % self.wave["distance"][i][0])
-                out.write(" %s" % self.wave["macro"][i][0])
-                out.write(" %s" % self.wave["planar"][i][0])
                 out.write("\n")
             out.write("END\n")
 
             if plot is True:
                 out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                          (waveprefix, "Macroavg", waveprefix, "Distance", waveprefix, "potential"))
-                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Distance"))
-                out.write(self.layout_preset("wf"))
-
+                          (waveprefix, "e1", waveprefix, "e1_E", waveprefix, "e1"))
+                out.write(self.layout_preset("diel", 1))
+                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                          (waveprefix, "e2", waveprefix, "e2_E", waveprefix, "e2"))
+                out.write(self.layout_preset("diel", 2))
         return
