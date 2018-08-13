@@ -213,15 +213,15 @@ class PlotIgor(object):
         egrid = np.array(egrid, dtype='d')
         dos = np.array(dos, dtype='d')
 
-        dic = {"egrid": np.reshape(egrid, (1, len(egrid), 1)),
-               "dos": np.reshape(dos, (1, np.shape(dos)[0], np.shape(dos)[1])),
-               "efermi": efermi
+        dic = {"dos": {"egrid": np.reshape(egrid, (1, len(egrid), 1)),
+                       "dos": np.reshape(dos, (1, np.shape(dos)[0], np.shape(dos)[1])),
+                       "efermi": efermi
+                       }
                }
-
         self.wave = dic
         return
 
-    def read_pdos(self, combine=False):
+    def read_pdos(self, kproj=False):
         with open(self.infile, "r") as pdosfile:
             egrid = []
             dos = []
@@ -247,19 +247,6 @@ class PlotIgor(object):
 
         egrid = np.array(egrid, dtype='d')
         dos = np.array(dos, dtype='d')
-
-        if hasattr(kp):
-            kp = np.array(kp, dtype='i')
-
-        if combine is False:
-            dic = {"egrid": np.reshape(egrid, (1, len(egrid), 1)),
-                   "dos": np.reshape(dos, (1, np.shape(dos)[0], np.shape(dos)[1])),
-                   "efermi": efermi
-                   }
-            self.wave = dic
-
-        elif combine is True:
-            pass
 
         return
 
