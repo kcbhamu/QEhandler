@@ -222,16 +222,77 @@ class PlotIgor(object):
         return
 
     def read_pdos(self, kproj=False):
+        """
+* The format for the collinear, spin-unpolarized case and the
+  non-collinear, spin-orbit case is:
+      E DOS(E) PDOS(E)
+      ...
+
+* The format for the collinear, spin-polarized case is:
+      E DOSup(E) DOSdw(E)  PDOSup(E) PDOSdw(E)
+      ...
+
+* The format for the non-collinear, non spin-orbit case is:
+      E DOS(E) PDOSup(E) PDOSdw(E)
+      ...
+
+In the collinear case and the non-collinear, non spin-orbit case
+projected DOS are written to file "filpdos".pdos_atm#N(X)_wfc#M(l),
+where N = atom number , X = atom symbol, M = wfc number, l=s,p,d,f
+(one file per atomic wavefunction found in the pseudopotential file)
+
+* The format for the collinear, spin-unpolarized case is:
+      E LDOS(E) PDOS_1(E) ... PDOS_2l+1(E)
+      ...
+  where LDOS = \sum m=1,2l+1 PDOS_m(E)
+  and PDOS_m(E) = projected DOS on atomic wfc with component m
+
+* The format for the collinear, spin-polarized case and the
+  non-collinear, non spin-orbit case is as above with
+  two components for both  LDOS(E) and PDOS_m(E)
+
+In the non-collinear, spin-orbit case (i.e. if there is at least one
+fully relativistic pseudopotential) wavefunctions are projected
+onto eigenstates of the total angular-momentum.
+Projected DOS are written to file "filpdos".pdos_atm#N(X)_wfc#M(l_j),
+where N = atom number , X = atom symbol, M = wfc number, l=s,p,d,f
+and j is the value of the total angular momentum.
+In this case the format is:
+    E LDOS(E) PDOS_1(E) ... PDOS_2j+1(E)
+    ...
+
+If kresolveddos=.true., the k-point index is prepended
+to the formats above, e.g. (collinear, spin-unpolarized case)
+    ik E DOS(E) PDOS(E)
+
+All DOS(E) are in states/eV plotted vs E in eV
+
+Orbital Order
+
+ Order of m-components for each l in the output:
+
+    1, cos(phi), sin(phi), cos(2*phi), sin(2*phi), .., cos(l*phi), sin(l*phi)
+
+where phi is the polar angle:x=r cos(theta)cos(phi), y=r cos(theta)sin(phi)
+This is determined in file Modules/ylmr2.f90 that calculates spherical harmonics.
+
+for l=1:
+  1 pz     (m=0)
+  2 px     (real combination of m=+/-1 with cosine)
+  3 py     (real combination of m=+/-1 with sine)
+
+for l=2:
+  1 dz2    (m=0)
+  2 dzx    (real combination of m=+/-1 with cosine)
+  3 dzy    (real combination of m=+/-1 with sine)
+  4 dx2-y2 (real combination of m=+/-2 with cosine)
+  5 dxy    (real combination of m=+/-2 with sine)
+
+        """
+
         with open(self.infile, "r") as pdosfile:
             egrid = []
             dos = []
-
-            index = pdosfile.readline().split()
-            if index[1] == "ik":
-                kproj = True
-                kp = []
-            else:
-                kproj = False
 
             lines = pdosfile.readlines()
             for x in lines:
