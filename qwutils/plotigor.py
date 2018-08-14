@@ -16,9 +16,9 @@ class PlotIgor(object):
         self.wave = defaultdict(dict)
         return
 
-    def file_changer(self, infile, outfile):
-        self.infile = infile
-        self.outfile = outfile
+    def file_changer(self, infile=None, outfile=None):
+        self.infile = infile or self.infile
+        self.outfile = outfile or self.outfile
         return
 
     @staticmethod
@@ -320,10 +320,10 @@ for l=2:
                 if len(x.split()) == 0:
                     ik_item = "ik_" + str(ik[-1])
                     dic[ik_item] = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
-                                   "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
-                                   "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1)),
-                                   "wavename": wavename
-                                   }
+                                    "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                                    "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1)),
+                                    "wavename": wavename
+                                    }
                     egrid = []
                     dos = []
                     ik = []
