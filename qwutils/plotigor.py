@@ -1,4 +1,5 @@
 from qwutils.generalutils import Unitconverter
+from collections import defaultdict
 import math
 import numpy as np
 import re
@@ -6,12 +7,13 @@ import argparse
 
 
 # TODO: empty prefix to the hasattr method
+# TODO: separating out pBS reading/writing method from pDOS related methods
 class PlotIgor(object):
     def __init__(self, infile, outfile=None, prefix=None):
         self.infile = infile
         self.outfile = outfile or (str(infile) + ".itx")
         self.prefix = prefix or ""
-        self.wave = {}
+        self.wave = defaultdict(dict)
         return
 
     @staticmethod
@@ -221,7 +223,7 @@ class PlotIgor(object):
         self.wave = dic
         return
 
-    def read_pdos(self):
+    def read_pdos(self, emin=None, emax=None):
         """
 * The format for the collinear, spin-unpolarized case and the
   non-collinear, spin-orbit case is:
@@ -290,7 +292,7 @@ for l=2:
 
         """
         with open(self.infile, "r") as pdosfile:
-            index = re.findall('\d\((.*?)\)', str(self.infile))
+            index = re.findall('\d\(.*?\)', str(self.infile))
             if len(index) == 0:
                 index.append("tot")
 
@@ -301,29 +303,39 @@ for l=2:
 
             line = pdosfile.readline()
             wavename.append(re.sub(r'\([^)]*\)', '', line).split()[1:])
-            if wavename[0] == "ik":
+            if wavename[0][0] == "ik":
                 kproj = True
                 ik = []
+            else:
+                kproj = False
 
             lines = pdosfile.readlines()
 
             for x in lines:
-                if len(x) == 0:
-                    dic[ik[-1]] = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
-                                        "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
-                                        "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1))
-                                        }
+                if len(x.split()) == 0:
+                    ik_item = "ik_" + str(ik[-1])
+                    dic[ik_item] = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
+                                   "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                                   "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1)),
+                                   "wavename": wavename
+                                   }
+                    egrid = []
+                    dos = []
+                    ik = []
                 elif kproj is False:
-                    egrid.append(x.split()[0])
-                    dos.append(x.split()[1:])
+                    if emin <= float(x.split()[0]) <= emax:
+                        egrid.append(x.split()[0])
+                        dos.append(x.split()[1:])
                 elif kproj is True:
-                    ik.append(x.split()[0])
-                    egrid.append(x.split()[1])
-                    dos.append(x.split()[2:])
+                    if emin <= float(x.split()[1]) <= emax:
+                        ik.append(int(x.split()[0]))
+                        egrid.append(x.split()[1])
+                        dos.append(x.split()[2:])
 
             if kproj is False:
                 dic = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
                        "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                       "wavename": wavename
                        }
 
         if index[0] == "tot":
