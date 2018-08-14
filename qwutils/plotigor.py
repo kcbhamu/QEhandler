@@ -11,7 +11,7 @@ class PlotIgor(object):
         self.infile = infile
         self.outfile = outfile or (str(infile) + ".itx")
         self.prefix = prefix or ""
-        self.wave = None
+        self.wave = {}
         return
 
     @staticmethod
@@ -29,7 +29,7 @@ class PlotIgor(object):
                       "X ModifyGraph standoff=0\n"
                       "X ModifyGraph axThick=1.5\n"
                       "X ModifyGraph axisOnTop=1\n"
-                      "X Label left \"\Z28 Energy (eV)\"\n"
+                      "X Label left \"\Z28Energy (eV)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                       "X SetAxis left -3,3\n"
                       "X ModifyGraph zeroThick(left)=1.5\n"
@@ -47,8 +47,8 @@ class PlotIgor(object):
                       "X ModifyGraph standoff=0\n"
                       "X ModifyGraph axThick=1.5\n"
                       "X ModifyGraph axisOnTop=1\n"
-                      "X Label bottom \"\Z28 Energy (eV)\"\n"
-                      "X Label left \"\Z28 DOS (arb. unit)\"\n"
+                      "X Label bottom \"\Z28Energy (eV)\"\n"
+                      "X Label left \"\Z28DOS (arb. unit)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                       "X SetAxis bottom -3,3\n"
                       )
@@ -65,8 +65,8 @@ class PlotIgor(object):
                       "X ModifyGraph standoff=0\n"
                       "X ModifyGraph axThick=1.5\n"
                       "X ModifyGraph axisOnTop=1\n"
-                      "X Label bottom \"\Z28 Distance (\{num2char(129)})\"\n"
-                      "X Label left \"\Z28 Energy (eV)\"\n"
+                      "X Label bottom \"\Z28Distance (\{num2char(129)})\"\n"
+                      "X Label left \"\Z28Energy (eV)\"\n"
                       "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
                       )
 
@@ -221,7 +221,7 @@ class PlotIgor(object):
         self.wave = dic
         return
 
-    def read_pdos(self, kproj=False):
+    def read_pdos(self):
         """
 * The format for the collinear, spin-unpolarized case and the
   non-collinear, spin-orbit case is:
@@ -289,25 +289,49 @@ for l=2:
   5 dxy    (real combination of m=+/-2 with sine)
 
         """
-
         with open(self.infile, "r") as pdosfile:
+            index = re.findall('\d\((.*?)\)', str(self.infile))
+            if len(index) == 0:
+                index.append("tot")
+
+            dic = {}
             egrid = []
             dos = []
+            wavename = []
+
+            line = pdosfile.readline()
+            wavename.append(re.sub(r'\([^)]*\)', '', line).split()[1:])
+            if wavename[0] == "ik":
+                kproj = True
+                ik = []
 
             lines = pdosfile.readlines()
+
             for x in lines:
                 if len(x) == 0:
-                    pass
+                    dic[ik[-1]] = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
+                                        "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                                        "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1))
+                                        }
                 elif kproj is False:
                     egrid.append(x.split()[0])
                     dos.append(x.split()[1:])
                 elif kproj is True:
-                    kp.append(x.split()[0])
+                    ik.append(x.split()[0])
                     egrid.append(x.split()[1])
                     dos.append(x.split()[2:])
 
-        egrid = np.array(egrid, dtype='d')
-        dos = np.array(dos, dtype='d')
+            if kproj is False:
+                dic = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
+                       "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                       }
+
+        if index[0] == "tot":
+            self.wave["tot"] = dic
+        else:
+            atom = re.search(r'\((.*?)\)', index[0]).group(1) + "_" + index[0].split('(', 1)[0]
+            orbital = re.search(r'\((.*?)\)', index[1]).group(1) + "_" + index[1].split('(', 1)[0]
+            self.wave[atom][orbital] = dic
 
         return
 
