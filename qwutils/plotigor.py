@@ -16,6 +16,11 @@ class PlotIgor(object):
         self.wave = defaultdict(dict)
         return
 
+    def file_changer(self, infile, outfile):
+        self.infile = infile
+        self.outfile = outfile
+        return
+
     @staticmethod
     def layout_preset(plottype, option=None):
         if plottype == "band":
