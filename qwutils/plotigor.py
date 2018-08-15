@@ -1,5 +1,5 @@
 from qwutils.generalutils import Unitconverter
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import math
 import numpy as np
 import re
@@ -301,7 +301,7 @@ for l=2:
             if len(index) == 0:
                 index.append("tot")
 
-            dic = {}
+            dic = OrderedDict()
             egrid = []
             dos = []
             wavename = []
@@ -344,10 +344,10 @@ for l=2:
                        }
 
         if index[0] == "tot":
-            self.wave["tot"] = dic
+            self.wave["tot"]["tot"] = dic
         else:
             atom = re.search(r'\((.*?)\)', index[0]).group(1) + "_" + index[0].split('(', 1)[0]
-            orbital = re.search(r'\((.*?)\)', index[1]).group(1) + "_" + index[1].split('(', 1)[0]
+            orbital = re.search(r'\((.*?)\)', index[1]).group(1)
             self.wave[atom][orbital] = dic
 
         return
@@ -393,6 +393,25 @@ for l=2:
                     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
                               (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
                 out.write(self.layout_preset("dos"))
+
+        return
+
+    def write_pdos(self, plot=True, fermi=0.0, orb=True, atom=True):
+        if self.prefix != "":
+            waveprefix = str(self.prefix) + "_"
+        else:
+            waveprefix = input("Please type the system name : ") + "_"
+
+        with open(self.outfile, "w") as out:
+            out.write("IGOR\n")
+            for w in self.wave.keys():
+                for x in self.wave[w].keys():
+                    for y in list(self.wave[w][x].keys()):
+                        for z in self.wave[w][x][y]["wavename"][0]:
+                            out.write("WAVES/D")
+                            out.write("")
+
+            self.wave["egrid"] -= fermi
 
         return
 
