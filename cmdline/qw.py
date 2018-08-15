@@ -214,6 +214,15 @@ def main():
     parser_dos.add_argument("-P", dest="plot", action='store_false')
     parser_dos.set_defaults(func=executeplotdos)
 
+    parser_pdos = plotsubparsers.add_parser("pdos")
+    parser_pdos.add_argument("-i", dest="input", type=str, default="pdos_tot")
+    parser_pdos.add_argument("-o", dest="output", type=str, default="pdos.itx")
+    parser_pdos.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_pdos.add_argument("-f", dest="fermi", type=float, default=0.0)
+    parser_pdos.add_argument("-P", dest="plot", action='store_false')
+    parser_pdos.add_argument("-c", dest="combine", action='store_false')
+    parser_pdos.set_defaults(func=executeplotpdos)
+
     parser_wf = plotsubparsers.add_parser("wf")
     parser_wf.add_argument("-i", dest="input", type=str, default="avg.dat")
     parser_wf.add_argument("-o", dest="output", type=str, default="avg.itx")
