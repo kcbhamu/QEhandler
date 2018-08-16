@@ -105,6 +105,17 @@ def executeplotdos(args):
     return
 
 
+def executeplotpdos(args):
+    p = PlotIgor(args.input, args.output, args.prefix)
+    # print("Reading %s ... " % args.input)
+    # p.read_dos()
+    # print("Done!")
+    # print("Writing %s ... " % args.output)
+    # p.write_dos(args.plot, args.fermi)
+    # print("Done!")
+    return
+
+
 def executeplotwf(args):
     p = PlotIgor(args.input, args.output, args.prefix)
     print("Reading %s ... " % args.input)

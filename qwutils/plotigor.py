@@ -190,13 +190,13 @@ class PlotIgor(object):
             out.write("END\n")
 
             if plot is True:
-                out.write("X Display %s%s_0 vs %s%s as \"%s%s\"\n" % (waveprefix, "band", waveprefix, "kpath",
+                out.write("X Display %s%s_1 vs %s%s as \"%s%s\"\n" % (waveprefix, "band", waveprefix, "kpath",
                                                                       waveprefix, "band"))
                 for i in range(np.shape(self.wave["band"])[1]):
                     if i == 0:
                         pass
                     else:
-                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i, waveprefix, "kpath"))
+                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i + 1, waveprefix, "kpath"))
                 out.write(self.layout_preset("band"))
 
             if guide is True:
