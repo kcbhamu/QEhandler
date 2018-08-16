@@ -13,7 +13,7 @@ class PlotIgor(object):
         self.infile = infile
         self.outfile = outfile or (str(infile) + ".itx")
         self.prefix = prefix or ""
-        self.wave = defaultdict(dict)
+        self.wave = defaultdict(lambda: defaultdict(dict))
         return
 
     def file_changer(self, infile=None, outfile=None):
@@ -311,35 +311,50 @@ for l=2:
             if wavename[0][0] == "ik":
                 kproj = True
                 ik = []
+                egrid_kproj = []
+                dos_kproj = []
+                ik_kproj = []
+                numk = 0
+                del(wavename[0][0:2])
             else:
                 kproj = False
+                del(wavename[0][0])
+
 
             lines = pdosfile.readlines()
 
             for x in lines:
                 if len(x.split()) == 0:
-                    ik_item = "ik_" + str(ik[-1])
-                    dic[ik_item] = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
-                                    "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
-                                    "ik": np.reshape(np.array(ik, dtype='d'), (1, len(egrid), 1)),
-                                    "wavename": wavename
-                                    }
+                    egrid_kproj.append(egrid)
+                    dos_kproj.append(dos)
+                    ik_kproj.append(ik)
+
                     egrid = []
                     dos = []
                     ik = []
-                elif kproj is False:
-                    if emin <= float(x.split()[0]) <= emax:
-                        egrid.append(x.split()[0])
-                        dos.append(x.split()[1:])
-                elif kproj is True:
-                    if emin <= float(x.split()[1]) <= emax:
-                        ik.append(int(x.split()[0]))
-                        egrid.append(x.split()[1])
-                        dos.append(x.split()[2:])
+                    numk += 1
+
+                else:
+                    if kproj is False:
+                        if emin <= float(x.split()[0]) <= emax:
+                            egrid.append(x.split()[0])
+                            dos.append(x.split()[1:])
+                    elif kproj is True:
+                        if emin <= float(x.split()[1]) <= emax:
+                            ik.append(int(x.split()[0]))
+                            egrid.append(x.split()[1])
+                            dos.append(x.split()[2:])
 
             if kproj is False:
                 dic = {"egrid": np.reshape(np.array(egrid, dtype='d'), (1, len(egrid), 1)),
                        "dos": np.reshape(np.array(dos, dtype='d'), (1, np.shape(dos)[0], np.shape(dos)[1])),
+                       "wavename": wavename
+                       }
+
+            elif kproj is True:
+                dic = {"egrid": np.reshape(np.array(egrid_kproj, dtype='d'), (numk, len(egrid_kproj[0]), 1)),
+                       "dos": np.reshape(np.array(dos_kproj, dtype='d'), (numk, np.shape(dos_kproj)[1], np.shape(dos_kproj)[2])),
+                       "ik": np.reshape(np.array(ik_kproj, dtype='d'), (numk, len(ik_kproj[0]), 1)),
                        "wavename": wavename
                        }
 
@@ -350,6 +365,39 @@ for l=2:
             orbital = re.search(r'\((.*?)\)', index[1]).group(1)
             self.wave[atom][orbital] = dic
 
+            if self.wave[re.search(r'\((.*?)\)', index[0]).group(1)][orbital] == {}:
+                self.wave[re.search(r'\((.*?)\)', index[0]).group(1)][orbital] = dic
+            else:
+                self.wave[re.search(r'\((.*?)\)', index[0]).group(1)][orbital]["dos"] += dic["dos"]
+
+        return
+
+    def sum_pdos(self):
+        for x in self.wave.keys():
+            dic = defaultdict(dict)
+            if "tot" in x:
+                pass
+            elif re.search("\d+", x):
+                pass
+            else:
+                for y in self.wave[x].keys():
+                    tmplist = []
+                    idxlist = []
+                    for z in enumerate(self.wave[x][y]["wavename"][0]):
+                        if "ldos" in z[1]:
+                            tmplist.append(z[1])
+                            idxlist.append(z[0])
+
+                    if "tot" not in self.wave[x].keys():
+                        dic["wavename"] = tmplist
+                        dic["egrid"] = self.wave[x][y]["egrid"]
+                        dic["dos"] = self.wave[x][y]["dos"][:, :, int(idxlist[0]):int(idxlist[-1]) + 1]
+                        if "ik" in self.wave[x][y].keys():
+                            dic["ik"] = self.wave[x][y]["ik"]
+
+                    else:
+                       dic["dos"] += self.wave[x][y]["dos"][:, :, int(idxlist[0]):int(idxlist[-1]) + 1]
+                self.wave[x]["tot"] = dic
         return
 
     def write_dos(self, plot=True, fermi=0.0):
@@ -459,8 +507,8 @@ for l=2:
 
             if plot is True:
                 out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                          (waveprefix, "Macroavg", waveprefix, "Distance", waveprefix, "potential"))
-                out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Planaravg", waveprefix, "Distance"))
+                          (waveprefix, "Planaravg", waveprefix, "Distance", waveprefix, "potential"))
+                # out.write("X AppendToGraph %s%s vs %s%s\n" % (waveprefix, "Macroavg", waveprefix, "Distance"))
                 out.write(self.layout_preset("wf"))
 
         return
