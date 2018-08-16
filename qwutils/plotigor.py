@@ -6,7 +6,6 @@ import re
 import argparse
 
 
-# TODO: empty prefix to the hasattr method
 # TODO: separating out pBS reading/writing method from pDOS related methods
 class PlotIgor(object):
     def __init__(self, infile, outfile=None, prefix=None):
@@ -150,9 +149,9 @@ class PlotIgor(object):
 
         guide_preset = ("X AppendToGraph " + waveprefix + "guide_y1 " + waveprefix + "guide_y2 vs " +
                         waveprefix + "k_highsym\n"
-                        "X ModifyGraph mode(" + waveprefix + "guide_y1)=1,rgb(" + waveprefix + "guide_y1)=(0,0,0)\n"
-                        "X ModifyGraph mode(" + waveprefix + "guide_y2)=1,rgb(" + waveprefix + "guide_y2)=(0,0,0)\n"
-                        "X SetAxis left -3,3"
+                                     "X ModifyGraph mode(" + waveprefix + "guide_y1)=1,rgb(" + waveprefix + "guide_y1)=(0,0,0)\n"
+                                                                                                            "X ModifyGraph mode(" + waveprefix + "guide_y2)=1,rgb(" + waveprefix + "guide_y2)=(0,0,0)\n"
+                                                                                                                                                                                   "X SetAxis left -3,3"
                         )
 
         if shift is True:
@@ -196,7 +195,8 @@ class PlotIgor(object):
                     if i == 0:
                         pass
                     else:
-                        out.write("X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i + 1, waveprefix, "kpath"))
+                        out.write(
+                            "X AppendToGraph %s%s_%s vs %s%s\n" % (waveprefix, "band", i + 1, waveprefix, "kpath"))
                 out.write(self.layout_preset("band"))
 
             if guide is True:
@@ -315,11 +315,10 @@ for l=2:
                 dos_kproj = []
                 ik_kproj = []
                 numk = 0
-                del(wavename[0][0:2])
+                del (wavename[0][0:2])
             else:
                 kproj = False
-                del(wavename[0][0])
-
+                del (wavename[0][0])
 
             lines = pdosfile.readlines()
 
@@ -353,7 +352,8 @@ for l=2:
 
             elif kproj is True:
                 dic = {"egrid": np.reshape(np.array(egrid_kproj, dtype='d'), (numk, len(egrid_kproj[0]), 1)),
-                       "dos": np.reshape(np.array(dos_kproj, dtype='d'), (numk, np.shape(dos_kproj)[1], np.shape(dos_kproj)[2])),
+                       "dos": np.reshape(np.array(dos_kproj, dtype='d'),
+                                         (numk, np.shape(dos_kproj)[1], np.shape(dos_kproj)[2])),
                        "ik": np.reshape(np.array(ik_kproj, dtype='d'), (numk, len(ik_kproj[0]), 1)),
                        "wavename": wavename
                        }
@@ -389,14 +389,14 @@ for l=2:
                             idxlist.append(z[0])
 
                     if "tot" not in self.wave[x].keys():
-                        dic["wavename"] = tmplist
+                        dic["wavename"] = [tmplist]
                         dic["egrid"] = self.wave[x][y]["egrid"]
                         dic["dos"] = self.wave[x][y]["dos"][:, :, int(idxlist[0]):int(idxlist[-1]) + 1]
                         if "ik" in self.wave[x][y].keys():
                             dic["ik"] = self.wave[x][y]["ik"]
 
                     else:
-                       dic["dos"] += self.wave[x][y]["dos"][:, :, int(idxlist[0]):int(idxlist[-1]) + 1]
+                        dic["dos"] += self.wave[x][y]["dos"][:, :, int(idxlist[0]):int(idxlist[-1]) + 1]
                 self.wave[x]["tot"] = dic
         return
 
@@ -444,22 +444,98 @@ for l=2:
 
         return
 
-    def write_pdos(self, plot=True, fermi=0.0, orb=True, atom=True):
+    def write_pdos(self, plot=True, fermi=0.0, atom=False, orbital=False):
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
         else:
             waveprefix = input("Please type the system name : ") + "_"
 
+        def wavewriter(element, orb):
+            if "ik" in self.wave[element][orb].keys():
+                out.write("WAVES/D")
+                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "Egrid", i))
+                out.write("\n")
+                out.write("BEGIN\n")
+                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    for j in range(np.shape(self.wave[element][orb]["egrid"])[1]):
+                        out.write(" %s" % self.wave[element][orb]["egrid"][i][j][0])
+                    out.write("\n")
+                out.write("END\n")
+
+                out.write("WAVES/D")
+                for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                    out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "ik", i))
+                out.write("\n")
+                out.write("BEGIN\n")
+                for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                    for j in range(np.shape(self.wave[element][orb]["ik"])[1]):
+                        out.write(" %s" % self.wave[element][orb]["ik"][i][j][0])
+                    out.write("\n")
+                out.write("END\n")
+
+                out.write("WAVES/D")
+                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for key in self.wave[element][orb]["wavename"][0]:
+                        out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, key, i))
+                out.write("\n")
+                out.write("BEGIN\n")
+                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for j in range(np.shape(self.wave[element][orb]["dos"])[1]):
+                        out.write(" %s" % self.wave[element][orb]["dos"][i][j][0])
+                    out.write("\n")
+                out.write("END\n")
+
+            else:
+                out.write("WAVES/D")
+                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
+                out.write("\n")
+                out.write("BEGIN\n")
+                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    for j in range(np.shape(self.wave[element][orb]["egrid"])[1]):
+                        out.write(" %s" % self.wave[element][orb]["egrid"][i][j][0])
+                    out.write("\n")
+                out.write("END\n")
+
+                out.write("WAVES/D")
+                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for key in self.wave[element][orb]["wavename"][0]:
+                        out.write(" %s%s_%s_%s" % (waveprefix, element, orb, key))
+                out.write("\n")
+                out.write("BEGIN\n")
+                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for j in range(np.shape(self.wave[element][orb]["dos"])[1]):
+                        out.write(" %s" % self.wave[element][orb]["dos"][i][j][0])
+                    out.write("\n")
+                out.write("END\n")
+
+            return
+
         with open(self.outfile, "w") as out:
             out.write("IGOR\n")
-            for w in self.wave.keys():
-                for x in self.wave[w].keys():
-                    for y in list(self.wave[w][x].keys()):
-                        for z in self.wave[w][x][y]["wavename"][0]:
-                            out.write("WAVES/D")
-                            out.write("")
-
-            self.wave["egrid"] -= fermi
+            for x in self.wave.keys():
+                if atom is False:
+                    if re.search("\d+", x):
+                        pass
+                    else:
+                        for y in self.wave[x].keys():
+                            if orbital is False:
+                                if "tot" not in y:
+                                    pass
+                                else:
+                                    wavewriter(x, y)
+                            else:
+                                wavewriter(x,y)
+                else:
+                    for y in self.wave[x].keys():
+                        if orbital is False:
+                            if "tot" not in y:
+                                pass
+                            else:
+                                wavewriter(x, y)
+                        else:
+                            wavewriter(x, y)
 
         return
 
