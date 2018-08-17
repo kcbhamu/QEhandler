@@ -94,6 +94,25 @@ class PlotIgor(object):
                       "X ModifyGraph zero(left)=8,zeroThick(left)=1.5\n"
                       % option)
 
+        elif plottype == "pband":
+            preset = ("X DefaultFont/U \"Times New Roman\"\n"
+                          "X ModifyGraph width=255.118,height=340.157\n"
+                          "X ModifyGraph lSize=1.5\n"
+                          "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                          "X ModifyGraph mirror=1\n"
+                          "X ModifyGraph zero(left)=8\n"
+                          "X ModifyGraph fSize=28\n"
+                          "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                          "X ModifyGraph standoff=0\n"
+                          "X ModifyGraph axThick=1.5\n"
+                          "X ModifyGraph axisOnTop=1\n"
+                          "X Label left \"\Z28Energy (eV)\"\n"
+                          "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                          "X SetAxis left -3,3\n"
+                          "X ModifyGraph zeroThick(left)=1.5\n"
+                          "X ModifyGraph mode=3,marker=16\n"
+                      )
+
         return preset
 
     def read_bands(self):
@@ -563,9 +582,14 @@ for l=2:
                            waveprefix, element, orb, "ik0",
                            waveprefix, element, orb))
                 for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
-                    out.write("X AppendToGraph %s%s_%s_%s%s vs %s%s_%s_%s%s\n" %
+                    if i != 0:
+                        out.write("X AppendToGraph %s%s_%s_%s%s vs %s%s_%s_%s%s\n" %
+                                  (waveprefix, element, orb, "Egrid", i,
+                                   waveprefix, element, orb, "ik", i))
+                for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                    out.write("X ModifyGraph zColor(%s%s_%s_%s%s)={%s%s_%s_%s%s,*,*,YellowHot256,0}\n" %
                               (waveprefix, element, orb, "Egrid", i,
-                               waveprefix, element, orb, "ik", i))
+                               waveprefix, element, orb, self.wave[element][orb]["wavename"][0][0], i))
                 out.write(self.layout_preset("pband"))
             return
 
