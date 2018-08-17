@@ -444,7 +444,7 @@ for l=2:
 
         return
 
-    def write_pdos(self, plot=True, fermi=0.0, atom=False, orbital=False, plotpbs=False):
+    def write_pdos(self, plot=True, fermi=0.0, atom=False, orbital=False):
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
         else:
@@ -452,70 +452,109 @@ for l=2:
 
         def wavewriter(element, orb):
             self.wave[element][orb]["egrid"] -= fermi
-
-            if "ik" in self.wave[element][orb].keys():
-                out.write("WAVES/D")
-                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
-                    out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "Egrid", i))
+            out.write("WAVES/D")
+            for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(np.shape(self.wave[element][orb]["egrid"])[1]):
+                for j in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    for k in range(np.shape(self.wave[element][orb]["egrid"])[2]):
+                        out.write(" %s" % self.wave[element][orb]["egrid"][:, i, k][j])
                 out.write("\n")
-                out.write("BEGIN\n")
-                for i in range(np.shape(self.wave[element][orb]["egrid"])[1]):
-                    for j in range(np.shape(self.wave[element][orb]["egrid"])[0]):
-                        for k in range(np.shape(self.wave[element][orb]["egrid"])[2]):
-                            out.write(" %s" % self.wave[element][orb]["egrid"][:,i,k][j])
-                    out.write("\n")
-                out.write("END\n")
+            out.write("END\n")
 
-                out.write("WAVES/D")
-                for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
-                    out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "ik", i))
+            out.write("WAVES/D")
+            for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                for key in self.wave[element][orb]["wavename"][0]:
+                    out.write(" %s%s_%s_%s" % (waveprefix, element, orb, key))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(np.shape(self.wave[element][orb]["dos"])[1]):
+                for j in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for k in range(np.shape(self.wave[element][orb]["dos"])[2]):
+                        out.write(" %s" % self.wave[element][orb]["dos"][:, i, k][j])
                 out.write("\n")
-                out.write("BEGIN\n")
-                for i in range(np.shape(self.wave[element][orb]["ik"])[1]):
-                    for j in range(np.shape(self.wave[element][orb]["ik"])[0]):
-                        for k in range(np.shape(self.wave[element][orb]["ik"])[2]):
-                            out.write(" %s" % self.wave[element][orb]["ik"][:,i,k][j])
-                    out.write("\n")
-                out.write("END\n")
+            out.write("END\n")
 
-                out.write("WAVES/D")
-                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
-                    for key in self.wave[element][orb]["wavename"][0]:
-                        out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, key, i))
-                out.write("\n")
-                out.write("BEGIN\n")
-                for i in range(np.shape(self.wave[element][orb]["dos"])[1]):
-                    for j in range(np.shape(self.wave[element][orb]["dos"])[0]):
-                        for k in range(np.shape(self.wave[element][orb]["dos"])[2]):
-                            out.write(" %s" % self.wave[element][orb]["dos"][:,i,k][j])
-                    out.write("\n")
-                out.write("END\n")
+            if plot is True:
+                out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
+                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+                          (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
+                out.write(self.layout_preset("dos"))
 
-            else:
-                out.write("WAVES/D")
-                for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
-                    out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
-                out.write("\n")
-                out.write("BEGIN\n")
-                for i in range(np.shape(self.wave[element][orb]["egrid"])[1]):
-                    for j in range(np.shape(self.wave[element][orb]["egrid"])[0]):
-                        for k in range(np.shape(self.wave[element][orb]["egrid"])[2]):
-                            out.write(" %s" % self.wave[element][orb]["egrid"][:,i,k][j])
-                    out.write("\n")
-                out.write("END\n")
+            return
 
-                out.write("WAVES/D")
-                for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
-                    for key in self.wave[element][orb]["wavename"][0]:
-                        out.write(" %s%s_%s_%s" % (waveprefix, element, orb, key))
+        with open(self.outfile, "w") as out:
+            out.write("IGOR\n")
+            for x in self.wave.keys():
+                if atom is False:
+                    if re.search("\d+", x):
+                        pass
+                    else:
+                        for y in self.wave[x].keys():
+                            if orbital is False:
+                                if "tot" not in y:
+                                    pass
+                                else:
+                                    wavewriter(x, y)
+                            else:
+                                wavewriter(x, y)
+                else:
+                    for y in self.wave[x].keys():
+                        if orbital is False:
+                            if "tot" not in y:
+                                pass
+                            else:
+                                wavewriter(x, y)
+                        else:
+                            wavewriter(x, y)
+        return
+
+    def write_pband(self, plot=True, fermi=0.0, atom=False, orbital=False):
+        if self.prefix != "":
+            waveprefix = str(self.prefix) + "_"
+        else:
+            waveprefix = input("Please type the system name : ") + "_"
+
+        def wavewriter(element, orb):
+            self.wave[element][orb]["egrid"] -= fermi
+            out.write("WAVES/D")
+            for i in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "Egrid", i))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(np.shape(self.wave[element][orb]["egrid"])[1]):
+                for j in range(np.shape(self.wave[element][orb]["egrid"])[0]):
+                    for k in range(np.shape(self.wave[element][orb]["egrid"])[2]):
+                        out.write(" %s" % self.wave[element][orb]["egrid"][:,i,k][j])
                 out.write("\n")
-                out.write("BEGIN\n")
-                for i in range(np.shape(self.wave[element][orb]["dos"])[1]):
-                    for j in range(np.shape(self.wave[element][orb]["dos"])[0]):
-                        for k in range(np.shape(self.wave[element][orb]["dos"])[2]):
-                            out.write(" %s" % self.wave[element][orb]["dos"][:,i,k][j])
-                    out.write("\n")
-                out.write("END\n")
+            out.write("END\n")
+
+            out.write("WAVES/D")
+            for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, "ik", i))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(np.shape(self.wave[element][orb]["ik"])[1]):
+                for j in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                    for k in range(np.shape(self.wave[element][orb]["ik"])[2]):
+                        out.write(" %s" % self.wave[element][orb]["ik"][:,i,k][j])
+                out.write("\n")
+            out.write("END\n")
+
+            out.write("WAVES/D")
+            for i in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                for key in self.wave[element][orb]["wavename"][0]:
+                    out.write(" %s%s_%s_%s%s" % (waveprefix, element, orb, key, i))
+            out.write("\n")
+            out.write("BEGIN\n")
+            for i in range(np.shape(self.wave[element][orb]["dos"])[1]):
+                for j in range(np.shape(self.wave[element][orb]["dos"])[0]):
+                    for k in range(np.shape(self.wave[element][orb]["dos"])[2]):
+                        out.write(" %s" % self.wave[element][orb]["dos"][:,i,k][j])
+                out.write("\n")
+            out.write("END\n")
 
             if plot is True:
                 if plotpbs is False:
@@ -523,7 +562,6 @@ for l=2:
                     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
                               (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
                     out.write(self.layout_preset("dos"))
-                elif plotpbs is True:
                     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
                               (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
                     out.write(self.layout_preset("pband"))
