@@ -1,5 +1,6 @@
 #!/usr/local/bin/python
 
+import os
 import argparse
 import sys
 import numpy as np
@@ -115,6 +116,27 @@ def executeplotpdos(args):
     # print("Done!")
     return
 
+def executeplotpband(args):
+    p = PlotIgor(args.input, args.output, args.prefix)
+    if args.combine is True:
+        for x in os.listdir():
+            if args.input in x:
+                p.file_changer(x)
+                print("Reading %s ... " % x)
+                p.read_pdos(args.emin, args.emax)
+                print("Done!")
+        print("Summing DOS ... ")
+        p.sum_pdos()
+        print("Writing %s ... " % args.output)
+        p.write_pband(args.plot, args.fermi)
+        print("Done!")
+    else:
+        print("Reading %s ... " % x)
+        p.read_pdos(args.emin, args.emax)
+        print("Writing %s ... " % args.output)
+        p.write_pband(args.plot, args.fermi)
+        print("Done!")
+    return
 
 def executeplotwf(args):
     p = PlotIgor(args.input, args.output, args.prefix)
@@ -233,6 +255,17 @@ def main():
     parser_pdos.add_argument("-P", dest="plot", action='store_false')
     parser_pdos.add_argument("-c", dest="combine", action='store_false')
     parser_pdos.set_defaults(func=executeplotpdos)
+
+    parser_pband = plotsubparsers.add_parser("pband")
+    parser_pband.add_argument("-i", dest="input", type=str, default="pdos_tot")
+    parser_pband.add_argument("-o", dest="output", type=str, default="pdos.itx")
+    parser_pband.add_argument("-p", dest="prefix", type=str, default=None)
+    parser_pband.add_argument("-f", dest="fermi", type=float, default=0.0)
+    parser_pband.add_argument("-emin", dest="emin", type=float, default=-50.00)
+    parser_pband.add_argument("-emax", dest="emax", type=float, default=50.00)
+    parser_pband.add_argument("-P", dest="plot", action='store_false')
+    parser_pband.add_argument("-c", dest="combine", action='store_true')
+    parser_pband.set_defaults(func=executeplotpdos)
 
     parser_wf = plotsubparsers.add_parser("wf")
     parser_wf.add_argument("-i", dest="input", type=str, default="avg.dat")
