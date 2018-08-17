@@ -587,7 +587,7 @@ for l=2:
                                   (waveprefix, element, orb, "Egrid", i,
                                    waveprefix, element, orb, "ik", i))
                 for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
-                    out.write("X ModifyGraph zColor(%s%s_%s_%s%s)={%s%s_%s_%s%s,*,*,YellowHot256,0}\n" %
+                    out.write("X ModifyGraph zColor(%s%s_%s_%s%s)={%s%s_%s_%s%s,*,*,Red,1}\n" %
                               (waveprefix, element, orb, "Egrid", i,
                                waveprefix, element, orb, self.wave[element][orb]["wavename"][0][0], i))
                 out.write(self.layout_preset("pband"))
