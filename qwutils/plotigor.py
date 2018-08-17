@@ -147,11 +147,10 @@ class PlotIgor(object):
         else:
             waveprefix = input("Please type the system name : ") + "_"
 
-        guide_preset = ("X AppendToGraph " + waveprefix + "guide_y1 " + waveprefix + "guide_y2 vs " +
-                        waveprefix + "k_highsym\n"
-                                     "X ModifyGraph mode(" + waveprefix + "guide_y1)=1,rgb(" + waveprefix + "guide_y1)=(0,0,0)\n"
-                                                                                                            "X ModifyGraph mode(" + waveprefix + "guide_y2)=1,rgb(" + waveprefix + "guide_y2)=(0,0,0)\n"
-                                                                                                                                                                                   "X SetAxis left -3,3"
+        guide_preset = ("X AppendToGraph " + waveprefix + "guide_y1 " + waveprefix + "guide_y2 vs " + waveprefix +
+                        "k_highsym\n" + "X ModifyGraph mode(" + waveprefix + "guide_y1)=1,rgb(" + waveprefix +
+                        "guide_y1)=(0,0,0)\n" + "X ModifyGraph mode(" + waveprefix + "guide_y2)=1,rgb(" + waveprefix +
+                        "guide_y2)=(0,0,0)\n" + "X SetAxis left -3,3"
                         )
 
         if shift is True:
@@ -444,6 +443,8 @@ for l=2:
 
         return
 
+#TODO: orbital naming when writing itx file
+
     def write_pdos(self, plot=True, fermi=0.0, atom=False, orbital=False):
         if self.prefix != "":
             waveprefix = str(self.prefix) + "_"
@@ -477,11 +478,11 @@ for l=2:
                 out.write("\n")
             out.write("END\n")
 
-            if plot is True:
-                out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
-                out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                          (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
-                out.write(self.layout_preset("dos"))
+            # if plot is True:
+            #     out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
+            #     out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
+            #               (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
+            #     out.write(self.layout_preset("dos"))
 
             return
 
@@ -552,19 +553,20 @@ for l=2:
             for i in range(np.shape(self.wave[element][orb]["dos"])[1]):
                 for j in range(np.shape(self.wave[element][orb]["dos"])[0]):
                     for k in range(np.shape(self.wave[element][orb]["dos"])[2]):
-                        out.write(" %s" % self.wave[element][orb]["dos"][:,i,k][j])
+                        out.write(" %s" % self.wave[element][orb]["dos"][:, i, k][j])
                 out.write("\n")
             out.write("END\n")
 
             if plot is True:
-                if plotpbs is False:
-                    out.write(" %s%s_%s_%s" % (waveprefix, element, orb, "Egrid"))
-                    out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                              (waveprefix, "tdos_up", waveprefix, "Egrid", waveprefix, "tdos"))
-                    out.write(self.layout_preset("dos"))
-                    out.write("X Display %s%s vs %s%s as \"%s%s\"\n" %
-                              (waveprefix, "tdos", waveprefix, "Egrid", waveprefix, "tdos"))
-                    out.write(self.layout_preset("pband"))
+                out.write("X Display %s%s_%s_%s vs %s%s_%s_%s as \"pband_%s%s_%s\"\n" %
+                          (waveprefix, element, orb, "Egrid0",
+                           waveprefix, element, orb, "ik0",
+                           waveprefix, element, orb))
+                for i in range(np.shape(self.wave[element][orb]["ik"])[0]):
+                    out.write("X AppendToGraph %s%s_%s_%s%s vs %s%s_%s_%s%s\n" %
+                              (waveprefix, element, orb, "Egrid", i,
+                               waveprefix, element, orb, "ik", i))
+                out.write(self.layout_preset("pband"))
             return
 
         with open(self.outfile, "w") as out:
@@ -581,7 +583,7 @@ for l=2:
                                 else:
                                     wavewriter(x, y)
                             else:
-                                wavewriter(x,y)
+                                wavewriter(x, y)
                 else:
                     for y in self.wave[x].keys():
                         if orbital is False:
