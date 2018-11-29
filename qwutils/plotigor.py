@@ -96,21 +96,21 @@ class PlotIgor(object):
 
         elif plottype == "pband":
             preset = ("X DefaultFont/U \"Times New Roman\"\n"
-                          "X ModifyGraph width=255.118,height=340.157\n"
-                          "X ModifyGraph lSize=1.5\n"
-                          "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
-                          "X ModifyGraph mirror=1\n"
-                          "X ModifyGraph zero(left)=8\n"
-                          "X ModifyGraph fSize=28\n"
-                          "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
-                          "X ModifyGraph standoff=0\n"
-                          "X ModifyGraph axThick=1.5\n"
-                          "X ModifyGraph axisOnTop=1\n"
-                          "X Label left \"\Z28Energy (eV)\"\n"
-                          "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
-                          "X SetAxis left -3,3\n"
-                          "X ModifyGraph zeroThick(left)=1.5\n"
-                          "X ModifyGraph mode=3,marker=16\n"
+                      "X ModifyGraph width=255.118,height=340.157\n"
+                      "X ModifyGraph lSize=1.5\n"
+                      "X ModifyGraph tick(left)=2,tick(bottom)=3,noLabel(bottom)=2\n"
+                      "X ModifyGraph mirror=1\n"
+                      "X ModifyGraph zero(left)=8\n"
+                      "X ModifyGraph fSize=28\n"
+                      "X ModifyGraph lblMargin(left)=15,lblMargin(bottom)=10\n"
+                      "X ModifyGraph standoff=0\n"
+                      "X ModifyGraph axThick=1.5\n"
+                      "X ModifyGraph axisOnTop=1\n"
+                      "X Label left \"\Z28Energy (eV)\"\n"
+                      "X ModifyGraph zero(bottom)=0;DelayUpdate\n"
+                      "X SetAxis left -3,3\n"
+                      "X ModifyGraph zeroThick(left)=1.5\n"
+                      "X ModifyGraph mode=3,marker=16\n"
                       )
 
         return preset
@@ -462,7 +462,7 @@ for l=2:
 
         return
 
-#TODO: orbital naming when writing itx file
+# TODO: orbital naming when writing itx file
 
     def write_pdos(self, plot=True, fermi=0.0, atom=False, orbital=False):
         if self.prefix != "":
@@ -547,7 +547,7 @@ for l=2:
             for i in range(np.shape(self.wave[element][orb]["egrid"])[1]):
                 for j in range(np.shape(self.wave[element][orb]["egrid"])[0]):
                     for k in range(np.shape(self.wave[element][orb]["egrid"])[2]):
-                        out.write(" %s" % self.wave[element][orb]["egrid"][:,i,k][j])
+                        out.write(" %s" % self.wave[element][orb]["egrid"][:, i, k][j])
                 out.write("\n")
             out.write("END\n")
 
@@ -559,7 +559,7 @@ for l=2:
             for i in range(np.shape(self.wave[element][orb]["ik"])[1]):
                 for j in range(np.shape(self.wave[element][orb]["ik"])[0]):
                     for k in range(np.shape(self.wave[element][orb]["ik"])[2]):
-                        out.write(" %s" % self.wave[element][orb]["ik"][:,i,k][j])
+                        out.write(" %s" % self.wave[element][orb]["ik"][:, i, k][j])
                 out.write("\n")
             out.write("END\n")
 
