@@ -210,7 +210,9 @@ def main():
     parser_pseudo.set_defaults(func=executepwinpseudo)
 
     parser_kpoints = pwinsubparsers.add_parser("kpoints")
-    parser_kpoints.add_argument("-ktype", dest="ktype", type=str, default=None)
+    parser_kpoints.add_argument("-i", dest="input", type=str, default="pw.in")
+    parser_kpoints.add_argument("-o", dest="output", type=str, default="pw.in")
+    parser_kpoints.add_argument("-ktype", dest="ktype", type=str, default="automatic")
     parser_kpoints.add_argument("-kgrid", dest="kgrid", type=str, default=None, nargs='*')
     parser_kpoints.add_argument("-kshift", dest="kshift", type=str, default=None, nargs='*')
     parser_kpoints.add_argument("-kspacing", dest="kspacing", type=str, default=None)

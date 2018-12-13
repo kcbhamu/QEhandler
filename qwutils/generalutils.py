@@ -1,5 +1,6 @@
 from ase import data, units
 
+# TODO: Get rid of the ase dependency -- tables to yaml or json?
 
 class Unitconverter(object):
     def __init__(self):
