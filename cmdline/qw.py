@@ -71,7 +71,7 @@ def executepwinpseudo(args):
 def executepwinkpoints(args):
     p = PWin()
     p.read_file(args.input)
-    p.change_kpoints(args.ktype, args.kspacing, args.kgrid, args.kshift, args.knum, args.kpts, args.kreduce)
+    p.change_kpoints(args.ktype, args.kspacing, args.kgrid, args.kshift, args.knum, args.klist, args.kreduce)
     p.write_pwin(args.output)
     return
 

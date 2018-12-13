@@ -255,7 +255,11 @@ class PWin(object):
                     gridc = "1"
 
             self.kpoints["grid"] = "%s %s %s" % (grida, gridb, gridc)
-            self.kpoints["shift"] = shift
+
+            if shift is None:
+                self.kpoints["shift"] = [0, 0, 0]
+            else:
+                self.kpoints["shift"] = [shift[0], shift[1], shift[2]]
         else:
             with open(kpts, "r") as infile:
                 kp_list = infile.readlines().split()
